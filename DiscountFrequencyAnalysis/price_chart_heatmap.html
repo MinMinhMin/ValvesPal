@@ -1,0 +1,119 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Heatmap Chart - Discount Frequency Analysis</title>
+            <script src="https://code.highcharts.com/highcharts.js"></script>
+            <script src="https://code.highcharts.com/modules/heatmap.js"></script>
+            <script src="https://code.highcharts.com/modules/exporting.js"></script>
+        <style>
+            @font-face {
+                    font-family: 'MyCustomFont';
+                    src: url('../FVF_Fernando_08.ttf') format('truetype');
+                    font-weight: normal;
+                    font-style: normal;
+                }
+
+                body {
+                    font-family: 'MyCustomFont', sans-serif;
+                }
+            ::-webkit-scrollbar {
+                            width: 12px;
+                            background: black;
+                            margin: 15px 0 15px 0;
+                            border-radius: 0px;
+                        }
+
+                        /* Style cho tay cầm thanh cuộn dọc */
+                        ::-webkit-scrollbar-thumb {
+                            background-color: white;
+                            min-height: 30px;
+                            border-radius: 7px;
+                            border: 3px solid black;
+                        }
+
+                        /* Hover trên tay cầm thanh cuộn dọc */
+                        ::-webkit-scrollbar-thumb:hover {
+                            background-color: silver;
+                        }
+
+                        /* Nhấn tay cầm thanh cuộn dọc */
+                        ::-webkit-scrollbar-thumb:active {
+                            background-color: rgb(185, 0, 92);
+                        }
+
+                        /* Style cho nút cuộn lên */
+                        ::-webkit-scrollbar-button:vertical:increment {
+                            border: 3px solid black;
+                            background-color: white;
+                            height: 15px;
+                            border-top-left-radius: 7px;
+                            border-top-right-radius: 7px;
+                        }
+
+                        /* Style cho nút cuộn xuống */
+                        ::-webkit-scrollbar-button:vertical:decrement {
+                            border: 3px solid black;
+                            background-color: white;
+                            height: 15px;
+                            border-bottom-left-radius: 7px;
+                            border-bottom-right-radius: 7px;
+                        }
+
+                        /* Ẩn các mũi tên */
+                        ::-webkit-scrollbar-button {
+                            background: none;
+                        }
+
+                        /* Cấm các phần trang (khu vực không phải tay cầm) */
+                        ::-webkit-scrollbar-track-piece {
+                            background: none;
+                        }
+        </style>
+        </head>
+        <body>
+            <div id="container1" style="width: 100%; height: 500px; margin-bottom: 50px;"></div>
+            <div id="container2" style="width: 100%; height: 500px;"></div>
+            <script type="text/javascript">
+                function syncExtremes(e) {
+                    var thisChart = this.chart;
+
+                    if (e.trigger !== 'syncExtremes') { // Prevent feedback loop
+                        Highcharts.each(Highcharts.charts, function (chart) {
+                            if (chart !== thisChart) {
+                                if (chart.xAxis[0].setExtremes) { // It is null while updating
+                                    chart.xAxis[0].setExtremes(
+                                        e.min,
+                                        e.max,
+                                        undefined,
+                                        false,
+                                        { trigger: 'syncExtremes' }
+                                    );
+                                }
+                            }
+                        });
+                    }
+                }
+
+                document.addEventListener('DOMContentLoaded', function () {
+                    var chartConfig1 = {"chart": {"type": "heatmap", "plotBorderWidth": 1, "zoomType": "xy", "style": {"fontFamily": "MyCustomFont"}}, "title": {"text": "Discount Frequency Analysis for Each Shop", "style": {"fontFamily": "MyCustomFont"}}, "xAxis": {"categories": ["Epic Games Store", "Fanatical", "GameBillet", "Humble Store", "Steam"], "title": {"text": "Shops"}, "labels": {"style": {"fontSize": "10px"}}}, "yAxis": {"categories": ["2023-11", "2023-12", "2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12", "2025-01", "2025-02"], "title": {"text": "Month"}, "reversed": true, "labels": {"style": {"fontSize": "10px"}}}, "colorAxis": {"min": 0, "minColor": "#FFFFFF", "maxColor": "#007BFF"}, "legend": {"align": "right", "layout": "vertical", "margin": 0, "verticalAlign": "top", "y": 25, "symbolHeight": 280}, "tooltip": {"pointFormat": "Discount Frequency: <b>{point.value}</b>"}, "series": [{"name": "Discount Frequency", "borderWidth": 1, "data": [[0, 0, 3], [0, 1, 2], [0, 2, 2], [0, 3, 3], [0, 4, 3], [0, 5, 2], [0, 6, 2], [0, 7, 1], [0, 8, 2], [0, 9, 4], [0, 10, 2], [0, 11, 4], [0, 12, 2], [1, 0, 4], [1, 1, 1], [1, 2, 3], [1, 3, 2], [1, 4, 1], [1, 5, 2], [1, 6, 1], [1, 7, 2], [1, 8, 1], [1, 9, 2], [1, 10, 1], [1, 11, 1], [1, 12, 1], [2, 0, 7], [2, 1, 6], [2, 2, 10], [2, 3, 8], [2, 4, 3], [2, 5, 2], [2, 6, 4], [2, 7, 6], [2, 8, 5], [2, 9, 8], [2, 10, 3], [2, 11, 3], [2, 12, 3], [3, 0, 6], [3, 1, 6], [3, 2, 2], [3, 3, 2], [3, 4, 1], [3, 5, 1], [3, 6, 0], [3, 7, 3], [3, 8, 3], [3, 9, 1], [3, 10, 2], [3, 11, 4], [3, 12, 1], [4, 0, 4], [4, 1, 8], [4, 2, 6], [4, 3, 6], [4, 4, 4], [4, 5, 5], [4, 6, 5], [4, 7, 1], [4, 8, 6], [4, 9, 3], [4, 10, 5], [4, 11, 0], [4, 12, 3]], "dataLabels": {"enabled": true, "color": "#000000", "format": "{point.value}"}}]};
+                    var chartConfig2 = {"chart": {"type": "heatmap", "plotBorderWidth": 1, "zoomType": "xy", "style": {"fontFamily": "MyCustomFont"}}, "title": {"text": "Predicted Discount Frequency for Next Three Months", "style": {"fontFamily": "MyCustomFont"}}, "xAxis": {"categories": ["Epic Games Store", "Fanatical", "GameBillet", "Humble Store", "Steam"], "title": {"text": "Shops"}, "labels": {"style": {"fontSize": "10px"}}}, "yAxis": {"categories": ["2023-11", "2023-12", "2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12", "2025-01", "2025-02"], "title": {"text": "Month"}, "reversed": true, "labels": {"style": {"fontSize": "10px"}}}, "colorAxis": {"min": 0, "minColor": "#FFFFFF", "maxColor": "#007BFF"}, "legend": {"align": "right", "layout": "vertical", "margin": 0, "verticalAlign": "top", "y": 25, "symbolHeight": 280}, "tooltip": {"pointFormat": "Predicted Discount Frequency: <b>{point.value}</b>"}, "series": [{"name": "Predicted Discount Frequency", "borderWidth": 1, "data": [[0, 13, 2], [0, 14, 2], [0, 15, 2], [1, 13, 0], [1, 14, 0], [1, 15, 0], [2, 13, 2], [2, 14, 2], [2, 15, 2], [3, 13, 1], [3, 14, 0], [3, 15, 0], [4, 13, 2], [4, 14, 1], [4, 15, 1]], "dataLabels": {"enabled": true, "color": "#000000", "format": "{point.value}"}}]};
+
+                    chartConfig1.chart.events = {
+                        load: function () {
+                            this.xAxis[0].update({ events: { afterSetExtremes: syncExtremes } });
+                        }
+                    };
+                    chartConfig2.chart.events = {
+                        load: function () {
+                            this.xAxis[0].update({ events: { afterSetExtremes: syncExtremes } });
+                        }
+                    };
+
+                    Highcharts.chart('container1', chartConfig1);
+                    Highcharts.chart('container2', chartConfig2);
+                });
+            </script>
+        </body>
+        </html>
+        

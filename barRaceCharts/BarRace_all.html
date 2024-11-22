@@ -1,0 +1,32 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="bar_race.css">
+</head>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<body>
+	<figure class="highcharts-figure">
+		<div id="parent-container">
+			<div id="play-controls">
+				<button id="play-pause-button" class="fa fa-play" title="play"></button>
+				<input id="play-range" type="range" value="0" min="0" max="36" />
+			</div>
+			<div id="container"></div>
+		</div>
+		<p class="highcharts-description" id="description">
+			Bar chart showing the monthly ranking of games from November 2021 to November 2024
+		</p>
+		<p class="highcharts-description" id="longestTop5">
+		</p>
+		<p class="highcharts-description" id="highgestPlayers">
+		</p>
+		<p class="highcharts-description" id="biggestStep">
+		</p>
+		<p class="highcharts-description" id="biggestDrop">
+		</p>
+	</figure>
+
+</body>
+
+<script src="function.js"></script>

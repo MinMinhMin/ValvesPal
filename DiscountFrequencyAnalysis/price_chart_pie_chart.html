@@ -1,0 +1,87 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Pie Chart - Discount Savings Market Share</title>
+            <script src="https://code.highcharts.com/highcharts.js"></script>
+            <script src="https://code.highcharts.com/modules/exporting.js"></script>
+        <style>
+            @font-face {
+                    font-family: 'MyCustomFont';
+                    src: url('../FVF_Fernando_08.ttf') format('truetype');
+                    font-weight: normal;
+                    font-style: normal;
+                }
+
+                body {
+                    font-family: 'MyCustomFont', sans-serif;
+                }
+            ::-webkit-scrollbar {
+                            width: 12px;
+                            background: black;
+                            margin: 15px 0 15px 0;
+                            border-radius: 0px;
+                        }
+
+                        /* Style cho tay cầm thanh cuộn dọc */
+                        ::-webkit-scrollbar-thumb {
+                            background-color: white;
+                            min-height: 30px;
+                            border-radius: 7px;
+                            border: 3px solid black;
+                        }
+
+                        /* Hover trên tay cầm thanh cuộn dọc */
+                        ::-webkit-scrollbar-thumb:hover {
+                            background-color: silver;
+                        }
+
+                        /* Nhấn tay cầm thanh cuộn dọc */
+                        ::-webkit-scrollbar-thumb:active {
+                            background-color: rgb(185, 0, 92);
+                        }
+
+                        /* Style cho nút cuộn lên */
+                        ::-webkit-scrollbar-button:vertical:increment {
+                            border: 3px solid black;
+                            background-color: white;
+                            height: 15px;
+                            border-top-left-radius: 7px;
+                            border-top-right-radius: 7px;
+                        }
+
+                        /* Style cho nút cuộn xuống */
+                        ::-webkit-scrollbar-button:vertical:decrement {
+                            border: 3px solid black;
+                            background-color: white;
+                            height: 15px;
+                            border-bottom-left-radius: 7px;
+                            border-bottom-right-radius: 7px;
+                        }
+
+                        /* Ẩn các mũi tên */
+                        ::-webkit-scrollbar-button {
+                            background: none;
+                        }
+
+                        /* Cấm các phần trang (khu vực không phải tay cầm) */
+                        ::-webkit-scrollbar-track-piece {
+                            background: none;
+                        }
+        </style>
+        </head>
+        <body>
+            <div id="container1" style="width: 100%; height: 500px; margin-bottom: 50px;"></div>
+            <div id="container2" style="width: 100%; height: 500px;"></div>
+            <script type="text/javascript">
+                document.addEventListener('DOMContentLoaded', function () {
+                    var chartConfig1 = {"chart": {"type": "pie", "style": {"fontFamily": "MyCustomFont"}}, "title": {"text": "Market Share of Total Discount Savings by Shop (Historical)", "style": {"fontFamily": "MyCustomFont"}}, "tooltip": {"pointFormat": "<b>{point.percentage:.1f}%</b> of total savings"}, "plotOptions": {"pie": {"allowPointSelect": true, "cursor": "pointer", "dataLabels": {"enabled": true, "format": "<b>{point.name}</b>: {point.percentage:.1f} %"}, "showInLegend": true}}, "series": [{"name": "Total Savings", "colorByPoint": true, "data": [{"name": "GameBillet", "y": 1042.8000000000002}, {"name": "Epic Games Store", "y": 330.9499999999999}, {"name": "Steam", "y": 407.21999999999986}, {"name": "Fanatical", "y": 210.89999999999998}, {"name": "Humble Store", "y": 299.09999999999997}]}]};
+                    var chartConfig2 = {"chart": {"type": "pie", "style": {"fontFamily": "MyCustomFont"}}, "title": {"text": "Predicted Market Share of Total Discount Savings by Shop (Next 12 Months)", "style": {"fontFamily": "MyCustomFont"}}, "tooltip": {"pointFormat": "<b>{point.percentage:.1f}%</b> of total savings"}, "plotOptions": {"pie": {"allowPointSelect": true, "cursor": "pointer", "dataLabels": {"enabled": true, "format": "<b>{point.name}</b>: {point.percentage:.1f} %"}, "showInLegend": true}}, "series": [{"name": "Total Savings", "colorByPoint": true, "data": [{"name": "GameBillet", "y": 1042.8000000000002}, {"name": "Epic Games Store", "y": 330.9499999999999}, {"name": "Steam", "y": 407.21999999999997}, {"name": "Fanatical", "y": 210.89999999999992}, {"name": "Humble Store", "y": 299.1}]}]};
+
+                    Highcharts.chart('container1', chartConfig1);
+                    Highcharts.chart('container2', chartConfig2);
+                });
+            </script>
+        </body>
+        </html>
+        

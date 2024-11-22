@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Highcharts Map with Local CSV</title>
+    <script src="tab.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://code.highcharts.com/maps/highmaps.js"></script>
+    <script src="https://code.highcharts.com/maps/modules/data.js"></script>
+    <script src="https://code.highcharts.com/maps/modules/map.js"></script>
+    <script src="https://code.highcharts.com/mapdata/custom/world.topo.json"></script>
+</head>
+<body>
+    <div class="tabs">
+        <ul>
+          <li><a href="#" onclick="openTab(event, 'Tab1')">2019</a></li>
+          <li><a href="#" onclick="openTab(event, 'Tab2')">2021</a></li>
+          <li><a href="#" onclick="openTab(event, 'Tab3')">% Growth</a></li>
+        </ul>
+
+        <div id="Tab1" class="tab-content">
+          <div id="container1" style="height: 500px; width: 100%;"></div>
+          <script src="function1.js"></script>
+        </div>
+        <div id="Tab2" class="tab-content">
+         <div id="container2" style="height: 500px; width: 100%;"></div>
+         <script src="function2.js"></script>
+        </div>
+        <div id="Tab3" class="tab-content">
+          <div id="container3" style="height: 500px; width: 100%;"></div>
+          <script src="function3.js"></script>
+        </div>
+    </div>
+
+</body>
+</html>

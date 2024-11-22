@@ -1,0 +1,1221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1280</width>
+    <height>720</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QPushButton" name="closeButton">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>100</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="baseSize">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="layoutDirection">
+       <enum>Qt::LeftToRight</enum>
+      </property>
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
+      <property name="text">
+       <string>X</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QScrollArea" name="scrollArea">
+      <property name="styleSheet">
+       <string notr="true"> QScrollBar:vertical {
+	border: none;
+    width: 12px;
+    background:black;
+    margin: 15px 0 15px 0;
+	border-radius: 0px;
+ }
+
+/*  HANDLE BAR VERTICAL */
+QScrollBar::handle:vertical {	
+	background-color: white;
+	min-height: 30px;
+	border-radius: 7px;
+    border:3px solid black;
+}
+QScrollBar::handle:vertical:hover{	
+	background-color:silver;
+}
+QScrollBar::handle:vertical:pressed {	
+	background-color: rgb(185, 0, 92);
+}
+
+/* BTN TOP - SCROLLBAR */
+QScrollBar::sub-line:vertical {
+	border:3px solid black;
+	background-color: white;
+	height: 15px;
+	border-top-left-radius: 7px;
+	border-top-right-radius: 7px;
+	subcontrol-position: top;
+	subcontrol-origin: margin;
+}
+QScrollBar::sub-line:vertical:hover {	
+	background-color: silver;
+}
+QScrollBar::sub-line:vertical:pressed {	
+	background-color: rgb(185, 0, 92);
+}
+
+/* BTN BOTTOM - SCROLLBAR */
+QScrollBar::add-line:vertical {
+	border:3px solid black;
+	background-color: white;
+	height: 15px;
+	border-bottom-left-radius: 7px;
+	border-bottom-right-radius: 7px;
+	subcontrol-position: bottom;
+	subcontrol-origin: margin;
+}
+QScrollBar::add-line:vertical:hover {	
+	background-color: silver;
+}
+QScrollBar::add-line:vertical:pressed {	
+	background-color: rgb(185, 0, 92);
+}
+
+/* RESET ARROW */
+QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
+	background: none;
+}
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+	background: none;
+}
+
+/* SCROLLBAR HORIZONTAL */
+QScrollBar:horizontal {
+    border: none;
+    height: 12px;
+    background: black;
+    margin: 0 15px 0 15px;
+    border-radius: 0px;
+}
+
+/* HANDLE BAR HORIZONTAL */
+QScrollBar::handle:horizontal {
+    background-color: white;
+    min-width: 30px;
+    border-radius: 7px;
+    border: 3px solid black;
+}
+QScrollBar::handle:horizontal:hover {
+    background-color: silver;
+}
+QScrollBar::handle:horizontal:pressed {
+    background-color: rgb(185, 0, 92);
+}
+
+/* BTN LEFT - SCROLLBAR */
+QScrollBar::sub-line:horizontal {
+    border: 3px solid black;
+    background-color: white;
+    width: 15px;
+    border-top-left-radius: 7px;
+    border-bottom-left-radius: 7px;
+    subcontrol-position: left;
+    subcontrol-origin: margin;
+}
+QScrollBar::sub-line:horizontal:hover {
+    background-color: silver;
+}
+QScrollBar::sub-line:horizontal:pressed {
+    background-color: rgb(185, 0, 92);
+}
+
+/* BTN RIGHT - SCROLLBAR */
+QScrollBar::add-line:horizontal {
+    border: 3px solid black;
+    background-color: white;
+    width: 15px;
+    border-top-right-radius: 7px;
+    border-bottom-right-radius: 7px;
+    subcontrol-position: right;
+    subcontrol-origin: margin;
+}
+QScrollBar::add-line:horizontal:hover {
+    background-color: silver;
+}
+QScrollBar::add-line:horizontal:pressed {
+    background-color: rgb(185, 0, 92);
+}
+
+/* RESET ARROW */
+QScrollBar::left-arrow:horizontal, QScrollBar::right-arrow:horizontal {
+    background: none;
+}
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+    background: none;
+}
+</string>
+      </property>
+      <property name="widgetResizable">
+       <bool>true</bool>
+      </property>
+      <widget class="QWidget" name="scrollAreaWidgetContents">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>-5270</y>
+         <width>1302</width>
+         <height>6312</height>
+        </rect>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QFrame" name="ui">
+          <property name="minimumSize">
+           <size>
+            <width>1280</width>
+            <height>6290</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <widget class="QLabel" name="gameName">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>10</y>
+             <width>1191</width>
+             <height>81</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>26</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Unnamed</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+          <widget class="QLabel" name="gameImage">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>110</y>
+             <width>521</width>
+             <height>571</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border: 7px solid rgb(15, 15, 15);
+</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="scaledContents">
+            <bool>true</bool>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label">
+           <property name="geometry">
+            <rect>
+             <x>745</x>
+             <y>60</y>
+             <width>431</width>
+             <height>71</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>20</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Điểm số các trang đánh giá</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_2">
+           <property name="geometry">
+            <rect>
+             <x>560</x>
+             <y>120</y>
+             <width>90</width>
+             <height>91</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="pixmap">
+            <pixmap>image/steamReviews.png</pixmap>
+           </property>
+           <property name="scaledContents">
+            <bool>true</bool>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_3">
+           <property name="geometry">
+            <rect>
+             <x>560</x>
+             <y>250</y>
+             <width>90</width>
+             <height>91</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="pixmap">
+            <pixmap>image/metascoreReview.png</pixmap>
+           </property>
+           <property name="scaledContents">
+            <bool>true</bool>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_4">
+           <property name="geometry">
+            <rect>
+             <x>560</x>
+             <y>213</y>
+             <width>121</width>
+             <height>41</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Steam score</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_5">
+           <property name="geometry">
+            <rect>
+             <x>560</x>
+             <y>340</y>
+             <width>121</width>
+             <height>41</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Metascore</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_6">
+           <property name="geometry">
+            <rect>
+             <x>560</x>
+             <y>380</y>
+             <width>90</width>
+             <height>91</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="pixmap">
+            <pixmap>image/metascoreReview.png</pixmap>
+           </property>
+           <property name="scaledContents">
+            <bool>true</bool>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_7">
+           <property name="geometry">
+            <rect>
+             <x>550</x>
+             <y>470</y>
+             <width>131</width>
+             <height>31</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Metacritic user</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_8">
+           <property name="geometry">
+            <rect>
+             <x>540</x>
+             <y>490</y>
+             <width>121</width>
+             <height>121</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="pixmap">
+            <pixmap>image/opencriticReviews.png</pixmap>
+           </property>
+           <property name="scaledContents">
+            <bool>true</bool>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_9">
+           <property name="geometry">
+            <rect>
+             <x>570</x>
+             <y>600</y>
+             <width>101</width>
+             <height>31</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>OpenCritic</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+          <widget class="QFrame" name="frame_2">
+           <property name="geometry">
+            <rect>
+             <x>690</x>
+             <y>120</y>
+             <width>501</width>
+             <height>501</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border: 5px solid rgb(15, 15, 15);
+</string>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Raised</enum>
+           </property>
+           <widget class="QFrame" name="frame_4">
+            <property name="geometry">
+             <rect>
+              <x>246</x>
+              <y>0</y>
+              <width>5</width>
+              <height>501</height>
+             </rect>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: 5px solid;border-radius: 0px;</string>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+           </widget>
+           <widget class="QWidget" name="verticalLayoutWidget">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>10</y>
+              <width>231</width>
+              <height>481</height>
+             </rect>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_3">
+             <item>
+              <widget class="QLabel" name="steamScore">
+               <property name="font">
+                <font>
+                 <pointsize>20</pointsize>
+                </font>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">border-radius: 0px;</string>
+               </property>
+               <property name="text">
+                <string>Unknow</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="metaScore">
+               <property name="font">
+                <font>
+                 <pointsize>20</pointsize>
+                </font>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">border-radius: 0px;</string>
+               </property>
+               <property name="text">
+                <string>Unknow</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="metaUserScore">
+               <property name="font">
+                <font>
+                 <pointsize>20</pointsize>
+                </font>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">border-radius: 0px;</string>
+               </property>
+               <property name="text">
+                <string>Unknow</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="openCriticScore">
+               <property name="font">
+                <font>
+                 <pointsize>20</pointsize>
+                </font>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">border-radius: 0px;</string>
+               </property>
+               <property name="text">
+                <string>Unknow</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="verticalLayoutWidget_2">
+            <property name="geometry">
+             <rect>
+              <x>260</x>
+              <y>10</y>
+              <width>231</width>
+              <height>481</height>
+             </rect>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_4">
+             <item>
+              <widget class="QLabel" name="steamCount">
+               <property name="font">
+                <font>
+                 <pointsize>20</pointsize>
+                </font>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">border-radius: 0px;</string>
+               </property>
+               <property name="text">
+                <string>Unknow</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="metaCount">
+               <property name="font">
+                <font>
+                 <pointsize>20</pointsize>
+                </font>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">border-radius: 0px;</string>
+               </property>
+               <property name="text">
+                <string>Unknow</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="metaUserCount">
+               <property name="font">
+                <font>
+                 <pointsize>20</pointsize>
+                </font>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">border-radius: 0px;</string>
+               </property>
+               <property name="text">
+                <string>Unknow</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="openCriticCount">
+               <property name="font">
+                <font>
+                 <pointsize>20</pointsize>
+                </font>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">border-radius: 0px;</string>
+               </property>
+               <property name="text">
+                <string>Unknow</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+          <widget class="QFrame" name="frame_3">
+           <property name="geometry">
+            <rect>
+             <x>690</x>
+             <y>630</y>
+             <width>491</width>
+             <height>71</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true"/>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Raised</enum>
+           </property>
+           <widget class="QWidget" name="horizontalLayoutWidget">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>0</y>
+              <width>481</width>
+              <height>51</height>
+             </rect>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout">
+             <item>
+              <widget class="QLabel" name="gameScore">
+               <property name="font">
+                <font>
+                 <pointsize>14</pointsize>
+                </font>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">border: 5px solid rgb(15, 15, 15);
+border-radius: 15px;</string>
+               </property>
+               <property name="text">
+                <string>Điểm</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_10">
+               <property name="font">
+                <font>
+                 <pointsize>14</pointsize>
+                </font>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">border: 5px solid rgb(15, 15, 15);
+border-radius: 15px;</string>
+               </property>
+               <property name="text">
+                <string>Lượng đánh giá</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+          <widget class="QLabel" name="releaseDate">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>690</y>
+             <width>611</width>
+             <height>41</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>20</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Ngày phát hành:</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="tags">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>740</y>
+             <width>521</width>
+             <height>401</height>
+            </rect>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>521</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>20</pointsize>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border: 7px solid rgb(15, 15, 15);
+</string>
+           </property>
+           <property name="text">
+            <string>Tags:</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+          </widget>
+          <widget class="QLabel" name="rank">
+           <property name="geometry">
+            <rect>
+             <x>785</x>
+             <y>690</y>
+             <width>411</width>
+             <height>51</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>20</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Xếp Hạng:</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="recentPlayerCount">
+           <property name="geometry">
+            <rect>
+             <x>553</x>
+             <y>721</y>
+             <width>721</width>
+             <height>101</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>20</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Lượng người chơi hiện tại:</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="dayPlayerCount">
+           <property name="geometry">
+            <rect>
+             <x>550</x>
+             <y>811</y>
+             <width>721</width>
+             <height>101</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>20</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Lượng người chơi trong ngày:</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="weekPlayerCount">
+           <property name="geometry">
+            <rect>
+             <x>550</x>
+             <y>901</y>
+             <width>731</width>
+             <height>101</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>20</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Lượng người chơi trong tuần: </string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="peak">
+           <property name="geometry">
+            <rect>
+             <x>675</x>
+             <y>1036</y>
+             <width>701</width>
+             <height>101</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>20</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>cùng lúc cao nhất:</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_11">
+           <property name="geometry">
+            <rect>
+             <x>550</x>
+             <y>991</y>
+             <width>331</width>
+             <height>101</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>20</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Lượng người chơi</string>
+           </property>
+          </widget>
+          <widget class="QFrame" name="frame">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>1160</y>
+             <width>1221</width>
+             <height>160</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border: 7px solid black;
+</string>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Raised</enum>
+           </property>
+           <widget class="QFrame" name="frame_5">
+            <property name="geometry">
+             <rect>
+              <x>70</x>
+              <y>-1</y>
+              <width>7</width>
+              <height>201</height>
+             </rect>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_12">
+            <property name="geometry">
+             <rect>
+              <x>30</x>
+              <y>2</y>
+              <width>21</width>
+              <height>181</height>
+             </rect>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>16</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border:0px</string>
+            </property>
+            <property name="text">
+             <string>S A L E</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+           <widget class="QLabel" name="sale">
+            <property name="geometry">
+             <rect>
+              <x>120</x>
+              <y>15</y>
+              <width>221</width>
+              <height>101</height>
+             </rect>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>48</pointsize>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border:0px;</string>
+            </property>
+            <property name="text">
+             <string>100%</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="latestPrice">
+            <property name="geometry">
+             <rect>
+              <x>550</x>
+              <y>3</y>
+              <width>631</width>
+              <height>71</height>
+             </rect>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>20</pointsize>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border:0px;
+</string>
+            </property>
+            <property name="text">
+             <string>Giá hiện tại: </string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="basePrice">
+            <property name="geometry">
+             <rect>
+              <x>550</x>
+              <y>60</y>
+              <width>631</width>
+              <height>71</height>
+             </rect>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>20</pointsize>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border:0px;
+</string>
+            </property>
+            <property name="text">
+             <string>Giá gốc: </string>
+            </property>
+           </widget>
+          </widget>
+          <widget class="QWidget" name="playersCountChart" native="true">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>1360</y>
+             <width>1211</width>
+             <height>361</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border: 2px solid black;</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="playCountFull">
+           <property name="geometry">
+            <rect>
+             <x>1120</x>
+             <y>1330</y>
+             <width>93</width>
+             <height>28</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Full screen</string>
+           </property>
+          </widget>
+          <widget class="QWidget" name="price_chart_step_line" native="true">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>1770</y>
+             <width>1211</width>
+             <height>730</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border: 2px solid black;</string>
+           </property>
+          </widget>
+          <widget class="QWidget" name="price_chart_pie_chart" native="true">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>2540</y>
+             <width>1211</width>
+             <height>730</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border: 2px solid black;</string>
+           </property>
+          </widget>
+          <widget class="QWidget" name="price_chart_heatmap" native="true">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>3310</y>
+             <width>1211</width>
+             <height>730</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border: 2px solid black;</string>
+           </property>
+          </widget>
+          <widget class="QWidget" name="price_chart_grouped_bar" native="true">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>4080</y>
+             <width>1211</width>
+             <height>730</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border: 2px solid black;</string>
+           </property>
+          </widget>
+          <widget class="QWidget" name="price_chart_column_chart" native="true">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>4850</y>
+             <width>1211</width>
+             <height>680</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border: 2px solid black;</string>
+           </property>
+          </widget>
+          <widget class="QWidget" name="price_chart_boxplot" native="true">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>5570</y>
+             <width>1211</width>
+             <height>680</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border: 2px solid black;</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="price_chart_step_lineFull">
+           <property name="geometry">
+            <rect>
+             <x>1120</x>
+             <y>1735</y>
+             <width>93</width>
+             <height>28</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Full screen</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="price_chart_pie_chartFull">
+           <property name="geometry">
+            <rect>
+             <x>1120</x>
+             <y>2510</y>
+             <width>93</width>
+             <height>28</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Full screen</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="price_chart_heatmapFull">
+           <property name="geometry">
+            <rect>
+             <x>1120</x>
+             <y>3280</y>
+             <width>93</width>
+             <height>28</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Full screen</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="price_chart_grouped_barFull">
+           <property name="geometry">
+            <rect>
+             <x>1120</x>
+             <y>4050</y>
+             <width>93</width>
+             <height>28</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Full screen</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="price_chart_column_chartFull">
+           <property name="geometry">
+            <rect>
+             <x>1120</x>
+             <y>4820</y>
+             <width>93</width>
+             <height>28</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Full screen</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="price_chart_boxplotFull">
+           <property name="geometry">
+            <rect>
+             <x>1120</x>
+             <y>5540</y>
+             <width>93</width>
+             <height>28</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Full screen</string>
+           </property>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1280</width>
+     <height>26</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

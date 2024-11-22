@@ -1,0 +1,117 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Grouped Bar Chart - Price Comparison with Prediction</title>
+            <script src="https://code.highcharts.com/highcharts.js"></script>
+        <style>
+            @font-face {
+                    font-family: 'MyCustomFont';
+                    src: url('../FVF_Fernando_08.ttf') format('truetype');
+                    font-weight: normal;
+                    font-style: normal;
+                }
+
+                body {
+                    font-family: 'MyCustomFont', sans-serif;
+                }
+            ::-webkit-scrollbar {
+                            width: 12px;
+                            background: black;
+                            margin: 15px 0 15px 0;
+                            border-radius: 0px;
+                        }
+
+                        /* Style cho tay cầm thanh cuộn dọc */
+                        ::-webkit-scrollbar-thumb {
+                            background-color: white;
+                            min-height: 30px;
+                            border-radius: 7px;
+                            border: 3px solid black;
+                        }
+
+                        /* Hover trên tay cầm thanh cuộn dọc */
+                        ::-webkit-scrollbar-thumb:hover {
+                            background-color: silver;
+                        }
+
+                        /* Nhấn tay cầm thanh cuộn dọc */
+                        ::-webkit-scrollbar-thumb:active {
+                            background-color: rgb(185, 0, 92);
+                        }
+
+                        /* Style cho nút cuộn lên */
+                        ::-webkit-scrollbar-button:vertical:increment {
+                            border: 3px solid black;
+                            background-color: white;
+                            height: 15px;
+                            border-top-left-radius: 7px;
+                            border-top-right-radius: 7px;
+                        }
+
+                        /* Style cho nút cuộn xuống */
+                        ::-webkit-scrollbar-button:vertical:decrement {
+                            border: 3px solid black;
+                            background-color: white;
+                            height: 15px;
+                            border-bottom-left-radius: 7px;
+                            border-bottom-right-radius: 7px;
+                        }
+
+                        /* Ẩn các mũi tên */
+                        ::-webkit-scrollbar-button {
+                            background: none;
+                        }
+
+                        /* Cấm các phần trang (khu vực không phải tay cầm) */
+                        ::-webkit-scrollbar-track-piece {
+                            background: none;
+                        }
+        </style>
+        </head>
+        <body>
+            <div id="container1" style="width: 100%; height: 500px; margin-bottom: 50px;"></div>
+            <div id="container2" style="width: 100%; height: 500px;"></div>
+            <script type="text/javascript">
+                function syncExtremes(e) {
+                    var thisChart = this.chart;
+
+                    if (e.trigger !== 'syncExtremes') {
+                        Highcharts.each(Highcharts.charts, function (chart) {
+                            if (chart !== thisChart) {
+                                if (chart.xAxis[0].setExtremes) {
+                                    chart.xAxis[0].setExtremes(
+                                        e.min,
+                                        e.max,
+                                        undefined,
+                                        false,
+                                        { trigger: 'syncExtremes' }
+                                    );
+                                }
+                            }
+                        });
+                    }
+                }
+
+                document.addEventListener('DOMContentLoaded', function () {
+                    var chartConfig1 = {"chart": {"type": "column", "zoomType": "x", "style": {"fontFamily": "MyCustomFont, sans-serif"}}, "title": {"text": "Price Comparison at the Same Time for Each Shop (Monthly)", "style": {"fontFamily": "MyCustomFont, sans-serif"}}, "xAxis": {"categories": ["2023-11", "2023-12", "2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11"], "title": {"text": "Month", "style": {"fontFamily": "MyCustomFont, sans-serif"}}, "labels": {"rotation": -45}}, "yAxis": {"title": {"text": "Price (USD)"}}, "tooltip": {"shared": true, "useHTML": true, "headerFormat": "<em>Month: {point.key}</em><br/>"}, "series": [{"name": "Epic Games Store", "data": [13.49, 8.91, 8.91, 8.91, 8.91, 8.91, 8.91, 29.99, 29.99, 29.99, 29.99, 7.7, 29.99]}, {"name": "Fanatical", "data": [29.99, 9.89, 29.99, 9.89, 29.99, 29.99, 9.89, 9.89, 29.99, 29.99, 9.89, 29.99, 9.89]}, {"name": "GameBillet", "data": [24.29, 7.53, 8.37, 17.99, 19.79, 9.37, 14.95, 8.07, 14.95, 25.19, 25.19, 7.9, 9.9]}, {"name": "Humble Store", "data": [29.99, 9.89, 9.89, 29.99, 9.89, 29.99, 29.99, 9.89, 29.99, 9.89, 9.89, 9.89, 29.99]}, {"name": "Steam", "data": [12.59, 8.39, 25.35, 25.35, 25.35, 25.35, 29.99, 8.39, 29.99, 29.99, 25.35, 25.35, 25.35]}]};
+                    var chartConfig2 = {"chart": {"type": "column", "zoomType": "x", "style": {"fontFamily": "MyCustomFont, sans-serif"}}, "title": {"text": "Predicted Price Comparison for the Next Twelve Months", "style": {"fontFamily": "MyCustomFont, sans-serif"}}, "xAxis": {"categories": ["2024-12", "2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11"], "title": {"text": "Month", "style": {"fontFamily": "MyCustomFont, sans-serif"}}, "labels": {"rotation": -45}}, "yAxis": {"title": {"text": "Price (USD)", "style": {"fontFamily": "MyCustomFont, sans-serif"}}}, "tooltip": {"shared": true, "useHTML": true, "headerFormat": "<em>Month: {point.key}</em><br/>"}, "series": [{"name": "Epic Games Store", "data": [28.95961538461538, 30.628571428571423, 32.29752747252746, 33.96648351648351, 35.63543956043955, 37.304395604395594, 38.97335164835164, 40.64230769230768, 42.311263736263726, 43.98021978021977, 45.64917582417581, 47.31813186813186]}, {"name": "Fanatical", "data": [18.393846153846155, 18.06252747252747, 17.73120879120879, 17.39989010989011, 17.068571428571428, 16.737252747252747, 16.405934065934066, 16.074615384615385, 15.743296703296703, 15.411978021978022, 15.080659340659341, 14.74934065934066]}, {"name": "GameBillet", "data": [14.630384615384616, 14.594175824175824, 14.557967032967033, 14.521758241758242, 14.48554945054945, 14.44934065934066, 14.413131868131869, 14.376923076923077, 14.340714285714286, 14.304505494505495, 14.268296703296704, 14.232087912087913]}, {"name": "Humble Store", "data": [17.620769230769227, 17.399890109890105, 17.179010989010983, 16.958131868131865, 16.737252747252743, 16.51637362637362, 16.2954945054945, 16.074615384615377, 15.853736263736259, 15.632857142857137, 15.411978021978017, 15.191098901098897]}, {"name": "Steam", "data": [29.276153846153846, 30.197032967032968, 31.11791208791209, 32.03879120879121, 32.95967032967033, 33.88054945054945, 34.80142857142857, 35.722307692307695, 36.643186813186816, 37.56406593406594, 38.48494505494506, 39.40582417582418]}]};
+
+                    chartConfig1.chart.events = {
+                        load: function () {
+                            this.xAxis[0].update({ events: { afterSetExtremes: syncExtremes } });
+                        }
+                    };
+                    chartConfig2.chart.events = {
+                        load: function () {
+                            this.xAxis[0].update({ events: { afterSetExtremes: syncExtremes } });
+                        }
+                    };
+
+                    Highcharts.chart('container1', chartConfig1);
+                    Highcharts.chart('container2', chartConfig2);
+                });
+            </script>
+        </body>
+        </html>
+        

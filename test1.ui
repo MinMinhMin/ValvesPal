@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1280</width>
+    <height>720</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QScrollArea" name="scrollArea">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>6</y>
+      <width>1240</width>
+      <height>660</height>
+     </rect>
+    </property>
+    <property name="widgetResizable">
+     <bool>true</bool>
+    </property>
+    <widget class="QWidget" name="scrollAreaWidgetContents">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>1238</width>
+       <height>658</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1280</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <addaction name="ReloadButton"/>
+   </widget>
+   <widget class="QMenu" name="menuCharts">
+    <property name="title">
+     <string>Charts Race</string>
+    </property>
+    <addaction name="chartsAll"/>
+    <addaction name="chartsSinglePlayer"/>
+    <addaction name="chartsAnime"/>
+    <addaction name="chartsHorror"/>
+    <addaction name="chartsRacing"/>
+    <addaction name="chartsSports"/>
+    <addaction name="chartsVisualNovel"/>
+    <addaction name="chartsSandbox"/>
+   </widget>
+   <widget class="QMenu" name="menuWorldCharts">
+    <property name="title">
+     <string> World Map </string>
+    </property>
+    <addaction name="SteamUserChart"/>
+   </widget>
+   <addaction name="menuTools"/>
+   <addaction name="menuCharts"/>
+   <addaction name="menuWorldCharts"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="ReloadButton">
+   <property name="text">
+    <string>Reload</string>
+   </property>
+  </action>
+  <action name="chartsAll">
+   <property name="text">
+    <string>All</string>
+   </property>
+  </action>
+  <action name="chartsSinglePlayer">
+   <property name="text">
+    <string>SinglePlayer</string>
+   </property>
+  </action>
+  <action name="chartsAnime">
+   <property name="text">
+    <string>Anime</string>
+   </property>
+  </action>
+  <action name="chartsHorror">
+   <property name="text">
+    <string>Horror</string>
+   </property>
+  </action>
+  <action name="chartsRacing">
+   <property name="text">
+    <string>Racing</string>
+   </property>
+  </action>
+  <action name="chartsSports">
+   <property name="text">
+    <string>Sports</string>
+   </property>
+  </action>
+  <action name="chartsVisualNovel">
+   <property name="text">
+    <string>VisualNovel</string>
+   </property>
+  </action>
+  <action name="chartsSandbox">
+   <property name="text">
+    <string>Sandbox</string>
+   </property>
+  </action>
+  <action name="SteamUserChart">
+   <property name="text">
+    <string>Steam Users</string>
+   </property>
+  </action>
+  <action name="steamUsers2020">
+   <property name="text">
+    <string>2020</string>
+   </property>
+  </action>
+  <action name="steamUsersGrowth">
+   <property name="text">
+    <string>Percent Growth</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
