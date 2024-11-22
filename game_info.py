@@ -106,7 +106,7 @@ def get_data(id):
         "id": id,
     }
 
-    response = requests.get(base_url, params=params,timeout=10)
+    response = requests.get(base_url, params=params)
 
     # Check the response
     if response.status_code == 200:
