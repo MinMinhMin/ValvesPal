@@ -195,26 +195,26 @@ class PriceComparisonGroupedBarChart:
                 "style": {"fontFamily": "MyCustomFont, sans-serif"},
             },
             "title": {
-                "text": "Price Comparison at the Same Time for Each Shop (Monthly)",
+                "text": "So sánh giá tại cùng thời điểm cho mỗi cửa hàng (Hàng tháng)",
                 "style": {"fontFamily": "MyCustomFont, sans-serif"},
             },
             "xAxis": {
                 "categories": time_points,
                 "title": {
-                    "text": "Month",
+                    "text": "Tháng",
                     "style": {"fontFamily": "MyCustomFont, sans-serif"},
                 },
                 "labels": {"rotation": -45},
             },
             "yAxis": {
                 "title": {
-                    "text": "Price (USD)",
+                    "text": "Giá (USD)",
                 }
             },
             "tooltip": {
                 "shared": True,
                 "useHTML": True,
-                "headerFormat": "<em>Month: {point.key}</em><br/>",
+                "headerFormat": "<em>Tháng: {point.key}</em><br/>",
             },
             "series": series,
         }
@@ -237,27 +237,27 @@ class PriceComparisonGroupedBarChart:
                 "style": {"fontFamily": "MyCustomFont, sans-serif"},
             },
             "title": {
-                "text": "Predicted Price Comparison for the Next Twelve Months",
+                "text": "Dự đoán so sánh giá cho 12 tháng tiếp theo",
                 "style": {"fontFamily": "MyCustomFont, sans-serif"},
             },
             "xAxis": {
                 "categories": predicted_time_points,
                 "title": {
-                    "text": "Month",
+                    "text": "Tháng",
                     "style": {"fontFamily": "MyCustomFont, sans-serif"},
                 },
                 "labels": {"rotation": -45},
             },
             "yAxis": {
                 "title": {
-                    "text": "Price (USD)",
+                    "text": "Giá (USD)",
                     "style": {"fontFamily": "MyCustomFont, sans-serif"},
                 }
             },
             "tooltip": {
                 "shared": True,
                 "useHTML": True,
-                "headerFormat": "<em>Month: {point.key}</em><br/>",
+                "headerFormat": "<em>Tháng: {point.key}</em><br/>",
             },
             "series": prediction_series,
         }
@@ -273,7 +273,7 @@ class PriceComparisonGroupedBarChart:
         <!DOCTYPE html>
         <html>
         <head>
-            <title>Grouped Bar Chart - Price Comparison with Prediction</title>
+            <title>Biểu đồ cột nhóm - So sánh giá với dự đoán</title>
             <script src="https://code.highcharts.com/highcharts.js"></script>
         <style>
             @font-face {{
@@ -390,7 +390,7 @@ class PriceComparisonGroupedBarChart:
         with open(output_file, "w", encoding="utf-8") as file:
             file.write(html_template)
 
-        print(f"Chart has been saved to {output_file}")
+        print(f"Biểu đồ đã được lưu vào {output_file}")
 
 
 # Use GameDealFetcher and PriceComparisonGroupedBarChart to generate the chart

@@ -1,69 +1,68 @@
 (async () => {
     try {
-        // Fetch CSV data
+        // Lấy dữ liệu CSV
         const csvData = await fetch('steam_users_2021_output.csv').then(response => response.text());
 
-        // Fetch the map data
+        // Lấy dữ liệu bản đồ
         const topology = await fetch(
             'https://code.highcharts.com/mapdata/custom/world.topo.json'
         ).then(response => response.json());
 
-        // Create the chart
+        // Tạo biểu đồ
         Highcharts.mapChart('container2', {
             chart: {
-                map: topology,
-                
+            map: topology,
             },
 
             title: {
-                text: 'Steam Users by Country (2021)',
-                align: 'left'
+            text: 'Số lượng người dùng Steam theo quốc gia (2021)',
+            align: 'left'
             },
 
             credits: {
-                href: 'https://steamcommunity.com/sharedfiles/filedetails/?id=923012519',
-                mapText: ' Data source: Steam'
+            href: 'https://steamcommunity.com/sharedfiles/filedetails/?id=923012519',
+            text: 'Nguồn dữ liệu: Steam'
             },
 
             mapNavigation: {
-                enabled: true,
-                buttonOptions: {
-                    verticalAlign: 'bottom'
-                }
+            enabled: true,
+            buttonOptions: {
+                verticalAlign: 'bottom'
+            }
             },
 
             colorAxis: {
-                min: 0
+            min: 0
             },
 
             data: {
-                csv: csvData, // Use the local CSV file data
-                seriesMapping: [{
-                    code: 1,   // Assuming country codes are in the second column
-                    value: 2   // Assuming user count is in the third column
-                }]
+            csv: csvData, // Sử dụng dữ liệu từ file CSV
+            seriesMapping: [{
+                code: 1,   // Giả sử mã quốc gia nằm ở cột thứ hai
+                value: 2   // Giả sử số lượng người dùng nằm ở cột thứ ba
+            }]
             },
 
             tooltip: {
-                valueDecimals: 0,
-                valueSuffix: ' users'
+            valueDecimals: 0,
+            valueSuffix: ' người dùng'
             },
 
             series: [{
-                name: 'Steam Users',
-                joinBy: ['iso-a3', 'code'],
-                dataLabels: {
-                    enabled: true,
-                    format: '{point.value}',
-                    filter: {
-                        operator: '>',
-                        property: 'labelrank',
-                        value: 250
-                    },
-                    style: {
-                        fontWeight: 'normal'
-                    }
+            name: 'Người dùng Steam',
+            joinBy: ['iso-a3', 'code'],
+            dataLabels: {
+                enabled: true,
+                format: '{point.value}',
+                filter: {
+                operator: '>',
+                property: 'labelrank',
+                value: 250
+                },
+                style: {
+                fontWeight: 'normal'
                 }
+            }
             }]
         });
 

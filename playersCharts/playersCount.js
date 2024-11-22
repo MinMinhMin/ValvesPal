@@ -32,7 +32,7 @@ function unixToDateString(unixTimestamp) {
 function analyzing(){
 
     var list=update_history.update;
-    document.getElementById("update").innerHTML+="All MAJOR updates: <br>";
+    document.getElementById("update").innerHTML += "Tất cả các cập nhật MAJOR: <br>";
     for(let i=0;i<list.length;i++){
         var date=unixToDateString(list[i][0]),title=list[i][1].replace(/^MAJOR\n/, '');
         document.getElementById("update").innerHTML+=`${date}: ${title} <br>`;
@@ -46,19 +46,19 @@ async function initializeChart() {
     await loadDataset();
     analyzing();
 
-    document.getElementById("title").textContent="Player count of "+title;
+    document.getElementById("title").textContent = "Số lượng người chơi của " + title;
 
 
     Highcharts.stockChart('container', {
 
-        chart:{
-            zooming:{
-                mouseWheel:{
-                    enabled:false,
+        chart: {
+            zooming: {
+                mouseWheel: {
+                    enabled: false,
                 }
             },
 
-            style:{
+            style: {
                 fontFamily: 'MyCustomFont',
                 fontSize: '13px'
             }
@@ -85,16 +85,29 @@ async function initializeChart() {
         },
 
         series: [{
-            name: 'Players: ',
+            name: 'Người chơi: ',
             data: counts
-        },{
-            name:"Prediction: ",
+        }, {
+            name: "Dự đoán: ",
             data: predicts,
-            dashStyle:'Dash'
+            dashStyle: 'Dash'
         }],
         xAxis: {
             plotLines: plotLines,
         },
+
+        title: {
+            text: 'Biểu đồ số lượng người chơi'
+        },
+
+        tooltip: {
+            xDateFormat: '%Y-%m-%d %H:%M:%S',
+            shared: true
+        },
+
+        credits: {
+            enabled: false
+        }
 
     });
 

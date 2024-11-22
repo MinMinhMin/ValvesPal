@@ -134,9 +134,9 @@ class TotalSavingsColumnChart:
         chart_config = {
             "chart": {"type": "column", "style": {"fontFamily": "MyCustomFont"}},
             "title": {"text": title, "style": {"fontFamily": "MyCustomFont"}},
-            "xAxis": {"categories": categories, "title": {"text": "Shops"}},
-            "yAxis": {"title": {"text": "Total Savings (USD)"}},
-            "series": [{"name": "Total Savings", "data": values}],
+            "xAxis": {"categories": categories, "title": {"text": "Cửa hàng"}},
+            "yAxis": {"title": {"text": "Tổng tiết kiệm (USD)"}},
+            "series": [{"name": "Tổng tiết kiệm", "data": values}],
         }
 
         return chart_config
@@ -147,7 +147,7 @@ class TotalSavingsColumnChart:
 
         # Generate chart configuration for historical data
         historical_chart_config = self.generate_chart_config(
-            "Total Savings from Discounts for Each Shop (Historical)", historical_data
+            "Tổng tiết kiệm từ giảm giá cho mỗi cửa hàng (Lịch sử)", historical_data
         )
         historical_chart_json = json.dumps(historical_chart_config)
 
@@ -156,7 +156,7 @@ class TotalSavingsColumnChart:
 
         # Generate chart configuration for predicted data
         predicted_chart_config = self.generate_chart_config(
-            "Predicted Total Savings from Discounts for Each Shop (Next 12 Months)",
+            "Dự đoán tổng tiết kiệm từ giảm giá cho mỗi cửa hàng (12 tháng tới)",
             predicted_data,
         )
         predicted_chart_json = json.dumps(predicted_chart_config)
@@ -166,7 +166,7 @@ class TotalSavingsColumnChart:
         <!DOCTYPE html>
         <html>
         <head>
-            <title>Column Chart - Total Savings with Predictions</title>
+            <title>Biểu đồ cột - Tổng tiết kiệm với dự đoán</title>
             <script src="https://code.highcharts.com/highcharts.js"></script>
         <style>
             @font-face {{
@@ -252,7 +252,7 @@ class TotalSavingsColumnChart:
         with open(output_file, "w", encoding="utf-8") as file:
             file.write(html_template)
 
-        print(f"Chart has been saved to {output_file}")
+        print(f"Biểu đồ đã được lưu vào {output_file}")
 
 
 # Sử dụng GameDealFetcher và TotalSavingsColumnChart để tạo biểu đồ Column Chart

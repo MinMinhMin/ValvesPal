@@ -11,59 +11,58 @@
         // Create the chart
         Highcharts.mapChart('container1', {
             chart: {
-                map: topology,
-                
+            map: topology,
             },
 
             title: {
-                text: 'Steam Users by Country (2019)',
-                align: 'left'
+            text: 'Số lượng người dùng Steam theo quốc gia (2019)',
+            align: 'left'
             },
 
             credits: {
-                href: 'https://steamcommunity.com/sharedfiles/filedetails/?id=923012519',
-                mapText: ' Data source: Steam'
+            href: 'https://steamcommunity.com/sharedfiles/filedetails/?id=923012519',
+            text: 'Nguồn dữ liệu: Steam'
             },
 
             mapNavigation: {
-                enabled: true,
-                buttonOptions: {
-                    verticalAlign: 'bottom'
-                }
+            enabled: true,
+            buttonOptions: {
+                verticalAlign: 'bottom'
+            }
             },
 
             colorAxis: {
-                min: 0
+            min: 0
             },
 
             data: {
-                csv: csvData, // Use the local CSV file data
-                seriesMapping: [{
-                    code: 1,   // Assuming country codes are in the second column
-                    value: 2   // Assuming user count is in the third column
-                }]
+            csv: csvData, // Sử dụng dữ liệu tệp CSV cục bộ
+            seriesMapping: [{
+                code: 1,   // Giả sử mã quốc gia nằm ở cột thứ hai
+                value: 2   // Giả sử số lượng người dùng nằm ở cột thứ ba
+            }]
             },
 
             tooltip: {
-                valueDecimals: 0,
-                valueSuffix: ' users'
+            valueDecimals: 0,
+            valueSuffix: ' người dùng'
             },
 
             series: [{
-                name: 'Steam Users',
-                joinBy: ['iso-a3', 'code'],
-                dataLabels: {
-                    enabled: true,
-                    format: '{point.value}',
-                    filter: {
-                        operator: '>',
-                        property: 'labelrank',
-                        value: 250
-                    },
-                    style: {
-                        fontWeight: 'normal'
-                    }
+            name: 'Người dùng Steam',
+            joinBy: ['iso-a3', 'code'],
+            dataLabels: {
+                enabled: true,
+                format: '{point.value}',
+                filter: {
+                operator: '>',
+                property: 'labelrank',
+                value: 250
+                },
+                style: {
+                fontWeight: 'normal'
                 }
+            }
             }]
         });
 

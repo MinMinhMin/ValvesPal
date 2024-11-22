@@ -165,19 +165,19 @@ class DiscountFrequencyHeatmap:
                 "style": {"fontFamily": "MyCustomFont"},
             },
             "title": {
-                "text": "Discount Frequency Analysis for Each Shop",
+                "text": "Phân Tích Tần Suất Giảm Giá Cho Mỗi Cửa Hàng",
                 "style": {"fontFamily": "MyCustomFont"},
             },
             "xAxis": {
                 "categories": shop_titles,
                 "title": {
-                    "text": "Shops",
+                    "text": "Cửa Hàng",
                 },
                 "labels": {"style": {"fontSize": "10px"}},
             },
             "yAxis": {
                 "categories": extended_dates,
-                "title": {"text": "Month"},
+                "title": {"text": "Tháng"},
                 "reversed": True,
                 "labels": {"style": {"fontSize": "10px"}},
             },
@@ -190,10 +190,10 @@ class DiscountFrequencyHeatmap:
                 "y": 25,
                 "symbolHeight": 280,
             },
-            "tooltip": {"pointFormat": "Discount Frequency: <b>{point.value}</b>"},
+            "tooltip": {"pointFormat": "Tần Suất Giảm Giá: <b>{point.value}</b>"},
             "series": [
                 {
-                    "name": "Discount Frequency",
+                    "name": "Tần Suất Giảm Giá",
                     "borderWidth": 1,
                     "data": heatmap_data,
                     "dataLabels": {
@@ -213,17 +213,17 @@ class DiscountFrequencyHeatmap:
                 "style": {"fontFamily": "MyCustomFont"},
             },
             "title": {
-                "text": "Predicted Discount Frequency for Next Three Months",
+                "text": "Dự Đoán Tần Suất Giảm Giá Trong Ba Tháng Tới",
                 "style": {"fontFamily": "MyCustomFont"},
             },
             "xAxis": {
                 "categories": shop_titles,
-                "title": {"text": "Shops"},
+                "title": {"text": "Cửa Hàng"},
                 "labels": {"style": {"fontSize": "10px"}},
             },
             "yAxis": {
                 "categories": extended_dates,
-                "title": {"text": "Month"},
+                "title": {"text": "Tháng"},
                 "reversed": True,
                 "labels": {"style": {"fontSize": "10px"}},
             },
@@ -237,11 +237,11 @@ class DiscountFrequencyHeatmap:
                 "symbolHeight": 280,
             },
             "tooltip": {
-                "pointFormat": "Predicted Discount Frequency: <b>{point.value}</b>"
+                "pointFormat": "Dự Đoán Tần Suất Giảm Giá: <b>{point.value}</b>"
             },
             "series": [
                 {
-                    "name": "Predicted Discount Frequency",
+                    "name": "Dự Đoán Tần Suất Giảm Giá",
                     "borderWidth": 1,
                     "data": prediction_heatmap_data,
                     "dataLabels": {
@@ -264,7 +264,7 @@ class DiscountFrequencyHeatmap:
         <!DOCTYPE html>
         <html>
         <head>
-            <title>Heatmap Chart - Discount Frequency Analysis</title>
+            <title>Biểu Đồ Heatmap - Phân Tích Tần Suất Giảm Giá</title>
             <script src="https://code.highcharts.com/highcharts.js"></script>
             <script src="https://code.highcharts.com/modules/heatmap.js"></script>
             <script src="https://code.highcharts.com/modules/exporting.js"></script>
@@ -383,7 +383,7 @@ class DiscountFrequencyHeatmap:
         with open(output_file, "w", encoding="utf-8") as file:
             file.write(html_template)
 
-        print(f"Chart has been saved to {output_file}")
+        print(f"Biểu đồ đã được lưu vào {output_file}")
 
 
 # Sử dụng GameDealFetcher và DiscountFrequencyHeatmap để tạo biểu đồ Heatmap

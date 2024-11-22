@@ -73,10 +73,10 @@ function analyzing(){
     top5= new Map([...top5.entries()].sort((a, b) => b[1]-a[1]));
     onTop5forLongest_Title=top5.keys().next().value;
     onTop5forLongest_Value=top5.get(onTop5forLongest_Title);
-    document.getElementById("longestTop5").textContent=` ${onTop5forLongest_Title} on Top 5 for ${onTop5forLongest_Value} months`;
-    document.getElementById("highgestPlayers").textContent=`Highest Numbers of Players at time is ${highestPlayerNumbers_Value} ( ${highgestPlayerNumbers_Title} ) at ${highestPlayerNumbers_time}`;
-    document.getElementById("biggestStep").textContent=`BiggestStep: ${biggestStep_Title} ${biggestStep_content}`;
-    document.getElementById("biggestDrop").textContent=`BiggestDrop: ${biggestDrop_Title} ${biggestDrop_content}`;
+    document.getElementById("longestTop5").textContent=`${onTop5forLongest_Title} nằm trong Top 5 lâu nhất với ${onTop5forLongest_Value} tháng`;
+    document.getElementById("highgestPlayers").textContent = `Số lượng người chơi cao nhất là ${highestPlayerNumbers_Value} (${highgestPlayerNumbers_Title}) vào tháng ${highestPlayerNumbers_time}`;
+    document.getElementById("biggestStep").textContent = `Bước nhảy lớn nhất: ${biggestStep_Title} ${biggestStep_content}`;
+    document.getElementById("biggestDrop").textContent = `Sụt giảm lớn nhất: ${biggestDrop_Title} ${biggestDrop_content}`;
 }
 
 
@@ -100,18 +100,18 @@ function getSubtitle() {
 
 async function initializeChart() {
     await loadDataset();
-    document.getElementById("description").innerHTML = `Bar chart showing the monthly ranking of ${category} games from November 2021 to November 2024`;
+    document.getElementById("description").innerHTML = `Biểu đồ thanh hiển thị xếp hạng hàng tháng của các trò chơi thuộc thể loại ${category} từ tháng 11 năm 2021 đến tháng 11 năm 2024`;
     chart = Highcharts.chart('container', {
         chart: {
             animation: { duration: 1000 },
             marginRight: 50,
-            style:{
+            style: {
                 fontFamily: 'MyCustomFont',
                 fontSize: '13px'
             }
         },
 
-        title: { text: 'Rankings', align: 'left' },
+        title: { text: 'Xếp hạng', align: 'left' },
         subtitle: {
             useHTML: true,
             text: getSubtitle(),

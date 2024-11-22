@@ -138,7 +138,7 @@ class DiscountSavingsPieChart:
             "chart": {"type": "pie", "style": {"fontFamily": "MyCustomFont"}},
             "title": {"text": title, "style": {"fontFamily": "MyCustomFont"}},
             "tooltip": {
-                "pointFormat": "<b>{point.percentage:.1f}%</b> of total savings"
+                "pointFormat": "<b>{point.percentage:.1f}%</b> của tổng số tiền tiết kiệm"
             },
             "plotOptions": {
                 "pie": {
@@ -152,7 +152,11 @@ class DiscountSavingsPieChart:
                 }
             },
             "series": [
-                {"name": "Total Savings", "colorByPoint": True, "data": series_data}
+                {
+                    "name": "Tổng số tiền tiết kiệm",
+                    "colorByPoint": True,
+                    "data": series_data,
+                }
             ],
         }
 
@@ -164,7 +168,7 @@ class DiscountSavingsPieChart:
 
         # Generate chart configuration for historical data
         historical_chart_config = self.generate_chart_config(
-            "Market Share of Total Discount Savings by Shop (Historical)",
+            "Thị phần tổng số tiền tiết kiệm chiết khấu theo cửa hàng (Lịch sử)",
             historical_data,
         )
         historical_chart_json = json.dumps(historical_chart_config)
@@ -174,7 +178,7 @@ class DiscountSavingsPieChart:
 
         # Generate chart configuration for predicted data
         predicted_chart_config = self.generate_chart_config(
-            "Predicted Market Share of Total Discount Savings by Shop (Next 12 Months)",
+            "Dự đoán thị phần tổng số tiền tiết kiệm chiết khấu theo cửa hàng (12 tháng tới)",
             predicted_data,
         )
         predicted_chart_json = json.dumps(predicted_chart_config)
@@ -184,7 +188,7 @@ class DiscountSavingsPieChart:
         <!DOCTYPE html>
         <html>
         <head>
-            <title>Pie Chart - Discount Savings Market Share</title>
+            <title>Biểu đồ tròn - Thị phần tiết kiệm chiết khấu</title>
             <script src="https://code.highcharts.com/highcharts.js"></script>
             <script src="https://code.highcharts.com/modules/exporting.js"></script>
         <style>
@@ -271,7 +275,7 @@ class DiscountSavingsPieChart:
         with open(output_file, "w", encoding="utf-8") as file:
             file.write(html_template)
 
-        print(f"Chart has been saved to {output_file}")
+        print(f"Biểu đồ đã được lưu vào {output_file}")
 
 
 # Sử dụng GameDealFetcher và DiscountSavingsPieChart để tạo biểu đồ Pie Chart

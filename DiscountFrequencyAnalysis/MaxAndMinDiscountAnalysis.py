@@ -202,7 +202,7 @@ class MaximumMinimumDiscountBoxPlot:
     def generate_html(self, output_file="boxplot_chart.html"):
         # Generate original data chart
         original_chart_config = self.generate_chart_config(
-            "Maximum and Minimum Discount Analysis for Each Shop (Historical)",
+            "Phân Tích Giảm Giá Tối Đa và Tối Thiểu Cho Mỗi Cửa Hàng (Lịch Sử)",
             self.shops_data,
         )
         original_chart_json = json.dumps(original_chart_config)
@@ -210,7 +210,7 @@ class MaximumMinimumDiscountBoxPlot:
         # Generate predicted data chart
         predicted_shops_data = self.predict_next_twelve_months()
         predicted_chart_config = self.generate_chart_config(
-            "Predicted Maximum and Minimum Discount Analysis for Each Shop (Next 12 Months)",
+            "Dự Đoán Phân Tích Giảm Giá Tối Đa và Tối Thiểu Cho Mỗi Cửa Hàng (12 Tháng Tới)",
             predicted_shops_data,
         )
         predicted_chart_json = json.dumps(predicted_chart_config)

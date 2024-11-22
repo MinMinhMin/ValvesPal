@@ -220,7 +220,7 @@ class PriceEvolutionLineChart:
                     },
                 },
                 "title": {
-                    "text": f"Price History of {series_data[i]['name']}",
+                    "text": f"Lịch Sử Giá Của {series_data[i]['name']}",
                     "style": {
                         "fontFamily": "'MyCustomFont', sans-serif",  # Thay đổi phông chữ của tiêu đề
                         "fontSize": "14px",
@@ -243,7 +243,7 @@ class PriceEvolutionLineChart:
                             "width": 2,
                             "dashStyle": "Dash",
                             "label": {
-                                "text": "Current Time",
+                                "text": "Thời Gian Hiện Tại",
                                 "align": "left",
                                 "rotation": 0,
                                 "y": 15,
@@ -259,7 +259,7 @@ class PriceEvolutionLineChart:
                 },
                 "yAxis": {
                     "title": {
-                        "text": "Price (USD)",
+                        "text": "Giá (USD)",
                         "style": {
                             "fontFamily": "'MyCustomFont', sans-serif",  # Thay đổi phông chữ của trục y
                             "fontSize": "12px",

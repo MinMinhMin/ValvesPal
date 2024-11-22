@@ -1,28 +1,27 @@
 (async () => {
     try {
-        // Fetch CSV data
+        // Lấy dữ liệu CSV
         const csvData = await fetch('country_user_gain.csv').then(response => response.text());
 
-        // Fetch the map data
+        // Lấy dữ liệu bản đồ
         const topology = await fetch(
             'https://code.highcharts.com/mapdata/custom/world.topo.json'
         ).then(response => response.json());
 
-        // Create the chart
+        // Tạo biểu đồ
         Highcharts.mapChart('container3', {
             chart: {
                 map: topology,
-                
             },
 
             title: {
-                text: 'Steam User % Growth Over Three Years (2019–2021)',
+                text: 'Tăng trưởng người dùng Steam qua ba năm (2019–2021)',
                 align: 'left'
             },
 
             credits: {
                 href: 'https://steamcommunity.com/sharedfiles/filedetails/?id=923012519',
-                mapText: ' Data source: Steam'
+                mapText: 'Nguồn dữ liệu: Steam'
             },
 
             mapNavigation: {
@@ -35,19 +34,19 @@
             colorAxis: {
                 min: 0,
                 stops: [
-                    [0, '#f7a35c'],  // Light orange for low values
-                    [0.25, '#ffcc99'], // Lighter red
-                    [0.5, '#ff6666'],  // Red-orange
-                    [0.75, '#ff0000'], // Bright red for higher values
-                    [1, '#800000']   // Dark red for the highest values
+                    [0, '#f7a35c'],  // Màu cam nhạt cho giá trị thấp
+                    [0.25, '#ffcc99'], // Màu đỏ nhạt hơn
+                    [0.5, '#ff6666'],  // Màu đỏ cam
+                    [0.75, '#ff0000'], // Màu đỏ sáng cho giá trị cao hơn
+                    [1, '#800000']   // Màu đỏ đậm cho giá trị cao nhất
                 ],
             },
 
             data: {
-                csv: csvData, // Use the local CSV file data
+                csv: csvData, // Sử dụng dữ liệu tệp CSV cục bộ
                 seriesMapping: [{
-                    code: 1,   // Assuming country codes are in the second column
-                    value: 2   // Assuming user count is in the third column
+                    code: 1,   // Giả sử mã quốc gia nằm ở cột thứ hai
+                    value: 2   // Giả sử số lượng người dùng nằm ở cột thứ ba
                 }]
             },
 
@@ -57,7 +56,7 @@
             },
 
             series: [{
-                name: 'Steam Users',
+                name: 'Người dùng Steam',
                 joinBy: ['iso-a3', 'code'],
                 dataLabels: {
                     enabled: true,
