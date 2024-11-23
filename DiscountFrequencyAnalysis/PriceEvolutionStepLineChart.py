@@ -198,6 +198,7 @@ class PriceEvolutionLineChart:
         )
         forecast_series = pd.Series(forecast, index=forecast_index, name="price")
 
+        forecast_series = forecast_series.round(2)
         return forecast_series
 
     def generate_highcharts_html(
@@ -510,7 +511,7 @@ class PriceEvolutionLineChart:
 def main():
     api_key = "07b0e806aacf15f38b230a850b424b2542dd71af"
     game_id = "018d937f-4008-731e-8860-4f552b359a5c"
-    shops_file = "shops.json"
+    shops_file = "DiscountFrequencyAnalysis/shops.json"
 
     fetcher = GameDealFetcher(api_key, game_id, shops_file)
     raw_data = fetcher.fetch_deal_history()

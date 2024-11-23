@@ -156,7 +156,7 @@ class PriceComparisonGroupedBarChart:
                         {
                             "time_point": date,
                             "shop_name": shop_name,
-                            "predicted_price": max(0, float(predicted_values[i])),
+                            "predicted_price": round(max(0, float(predicted_values[i])),2),
                         }
                     )
 
@@ -398,7 +398,7 @@ def main():
     # Necessary Information
     api_key = "07b0e806aacf15f38b230a850b424b2542dd71af"
     game_id = "018d937f-590c-728b-ac35-38bcff85f086"
-    shops_file = "shops.json"
+    shops_file = "DiscountFrequencyAnalysis/shops.json"
 
     # Initialize GameDealFetcher to fetch data from API
     fetcher = GameDealFetcher(api_key, game_id, shops_file)

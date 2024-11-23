@@ -82,7 +82,7 @@ class MaximumMinimumDiscountBoxPlot:
         for shop in raw_data:
             shop_title = shop.get("shop_title", "Unknown Shop")
             deals = shop.get("deals", [])
-            discounts = [deal["cut"] for deal in deals if "cut" in deal]
+            discounts = [round(deal["cut"],2) for deal in deals if "cut" in deal]
 
             self.shops_data.append({"shop_title": shop_title, "discounts": discounts})
 
@@ -98,7 +98,7 @@ class MaximumMinimumDiscountBoxPlot:
                 future_x = np.arange(len(discounts), len(discounts) + 12).reshape(-1, 1)
                 predicted_values = model.predict(future_x)
                 predicted_values = [
-                    max(0, val) for val in predicted_values
+                        round(max(0, val),2) for val in predicted_values
                 ]  # Ensure no negative predictions
 
                 predicted_data.append(
@@ -314,7 +314,7 @@ def main():
     # Các thông tin cần thiết
     api_key = "07b0e806aacf15f38b230a850b424b2542dd71af"
     game_id = "018d937f-590c-728b-ac35-38bcff85f086"
-    shops_file = "shops.json"
+    shops_file = "DiscountFrequencyAnalysis/shops.json"
 
     # Khởi tạo GameDealFetcher để lấy dữ liệu từ API
     fetcher = GameDealFetcher(api_key, game_id, shops_file)

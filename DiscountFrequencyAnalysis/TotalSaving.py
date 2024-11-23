@@ -96,6 +96,7 @@ class TotalSavingsColumnChart:
                 if savings > 0:
                     total_savings[shop_title] += savings
 
+        total_savings = {k: round(v, 2) for k, v in total_savings.items()}
         return total_savings
 
     def predict_next_twelve_months(
@@ -119,7 +120,7 @@ class TotalSavingsColumnChart:
                 forecast = model.forecast(12)
 
                 # Sum the forecast values to get the total predicted savings for the next year
-                predicted_savings[shop_title] = max(0, float(np.sum(forecast)))
+                predicted_savings[shop_title] = round(max(0, float(np.sum(forecast))),2)
             else:
                 predicted_savings[shop_title] = 0
 
@@ -260,7 +261,7 @@ def main():
     # Các thông tin cần thiết
     api_key = "07b0e806aacf15f38b230a850b424b2542dd71af"
     game_id = "018d937f-590c-728b-ac35-38bcff85f086"
-    shops_file = "shops.json"
+    shops_file = "DiscountFrequencyAnalysis/shops.json"
 
     # Khởi tạo GameDealFetcher để lấy dữ liệu từ API
     fetcher = GameDealFetcher(api_key, game_id, shops_file)

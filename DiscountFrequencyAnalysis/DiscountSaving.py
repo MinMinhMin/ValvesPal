@@ -123,7 +123,7 @@ class DiscountSavingsPieChart:
                 predicted_values = model.predict(future_x)
 
                 # Sum the predicted values to get total savings prediction for the next year
-                predicted_savings[shop_title] = max(0, float(np.sum(predicted_values)))
+                predicted_savings[shop_title] = round(max(0, float(np.sum(predicted_values))),2)
             else:
                 predicted_savings[shop_title] = 0
 
@@ -283,7 +283,7 @@ def main():
     # Các thông tin cần thiết
     api_key = "07b0e806aacf15f38b230a850b424b2542dd71af"
     game_id = "018d937f-590c-728b-ac35-38bcff85f086"
-    shops_file = "shops.json"
+    shops_file = "DiscountFrequencyAnalysis/shops.json"
 
     # Khởi tạo GameDealFetcher để lấy dữ liệu từ API
     fetcher = GameDealFetcher(api_key, game_id, shops_file)
