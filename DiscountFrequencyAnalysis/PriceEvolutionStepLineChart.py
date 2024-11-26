@@ -17,6 +17,17 @@ class GameDealFetcher:
         shops: str = "61,35,16,6,20,24,37",
         since: str = "2023-11-06T00:00:00Z",
     ):
+        """
+        Hàm khởi tạo đối tượng GameDealFetcher.
+
+        Parameters:
+        - api_key (str): Khóa API để truy cập dữ liệu từ IsThereAnyDeal.
+        - game_id (str): ID của trò chơi cần lấy dữ liệu.
+        - shops_file (str): Đường dẫn tới file JSON chứa thông tin các cửa hàng.
+        - country (str): Mã quốc gia, mặc định là "US".
+        - shops (str): Danh sách ID cửa hàng, mặc định là "61,35,16,6,20,24,37".
+        - since (str): Thời gian bắt đầu lấy dữ liệu (ISO 8601), mặc định là "2023-11-06T00:00:00Z".
+        """
         self.api_key = api_key
         self.base_url = "https://api.isthereanydeal.com/games/history/v2"
         self.params = {
@@ -29,6 +40,15 @@ class GameDealFetcher:
         self.shops_data = self.load_shops_data(shops_file)
 
     def load_shops_data(self, shops_file: str) -> Dict:
+        """
+        Hàm tải dữ liệu cửa hàng từ file JSON.
+
+        Parameters:
+        - shops_file (str): Đường dẫn tới file JSON chứa dữ liệu cửa hàng.
+
+        Returns:
+        - Một từ điển chứa dữ liệu các cửa hàng.
+        """
         try:
             with open(shops_file, "r", encoding="utf-8") as file:
                 return json.load(file)
@@ -36,6 +56,12 @@ class GameDealFetcher:
             raise Exception(f"Lỗi khi đọc file shops JSON: {str(e)}")
 
     def fetch_deal_history(self) -> Union[List, Dict]:
+        """
+        Hàm lấy lịch sử giao dịch từ API.
+
+        Returns:
+        - Dữ liệu lịch sử giao dịch dưới dạng danh sách hoặc từ điển.
+        """
         response = requests.get(self.base_url, params=self.params)
         if response.status_code == 200:
             return response.json()
@@ -43,6 +69,15 @@ class GameDealFetcher:
             raise Exception(f"Error: {response.status_code} - {response.text}")
 
     def format_data(self, data: Union[List, Dict]) -> List[Dict]:
+        """
+        Hàm định dạng lại dữ liệu trả về từ API thành dạng dễ sử dụng cho việc vẽ biểu đồ.
+
+        Parameters:
+        - data (Union[List, Dict]): Dữ liệu lịch sử giao dịch nhận được từ API.
+
+        Returns:
+        - Một danh sách các từ điển chứa thông tin về từng cửa hàng và giao dịch.
+        """
         if isinstance(data, dict) and "data" in data:
             data = data["data"]
 
@@ -72,18 +107,38 @@ class GameDealFetcher:
         return formatted_data
 
 
-import datetime
-
-
 class PriceEvolutionLineChart:
     def __init__(self, data):
+        """
+        Hàm khởi tạo đối tượng PriceEvolutionLineChart.
+
+        Parameters:
+        - data (List[Dict]): Dữ liệu các giao dịch từ đối tượng GameDealFetcher.
+        """
         self.data = data
 
     def convert_timestamp(self, timestamp: str) -> int:
+        """
+        Hàm chuyển đổi timestamp từ định dạng ISO 8601 sang Unix timestamp (milliseconds).
+
+        Parameters:
+        - timestamp (str): Thời gian ở định dạng ISO 8601.
+
+        Returns:
+        - Unix timestamp (int): Thời gian được chuyển đổi sang Unix timestamp (milliseconds).
+        """
         dt = datetime.datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
         return int(dt.timestamp() * 1000)
 
     def prepare_series_data(self):
+        """
+        Hàm chuẩn bị dữ liệu cho biểu đồ, bao gồm việc xử lý các giao dịch, tạo khoảng thời gian đầy đủ,
+        dự báo giá trị trong tương lai, và phân chia các chuỗi dữ liệu thực tế và dự đoán.
+
+        Returns:
+        - series (List[Dict]): Danh sách các chuỗi dữ liệu cho biểu đồ (bao gồm cả dữ liệu thực tế và dự đoán).
+        - boundary_timestamp (int): Thời gian ranh giới giữa dữ liệu thực tế và dữ liệu dự đoán.
+        """
         series = []
         colors = [
             "#7cb5ec",
@@ -111,12 +166,12 @@ class PriceEvolutionLineChart:
             # Xóa các nhãn bị trùng lặp bằng cách giữ lại giá trị cuối cùng trong ngày
             df = df[~df.index.duplicated(keep="last")]
 
-            # Create a date range from the earliest date to today with daily frequency
+            # Tạo một dải thời gian từ ngày đầu tiên đến hôm nay với tần suất hàng ngày
             full_date_range = pd.date_range(
                 start=df.index.min(), end=today, freq="D", tz="UTC"
             )
 
-            # Reindex the dataframe to include all days, forward filling missing values
+            # Reindex lại dataframe để bao gồm tất cả các ngày, điền giá trị thiếu bằng phương pháp forward fill
             df = df.reindex(full_date_range, method="ffill")
 
             # Dự đoán giá trong tương lai bằng phương pháp Holt-Winters
@@ -181,78 +236,86 @@ class PriceEvolutionLineChart:
         return series, boundary_timestamp
 
     def forecast_prices(self, df, periods=120):
-        # Áp dụng mô hình Holt-Winters để dự đoán
-        if len(df) < 2:
-            raise ValueError("Không đủ dữ liệu để dự đoán")
+        """
+        Hàm dự đoán giá trong tương lai sử dụng mô hình Holt-Winters.
 
+        Parameters:
+        - df (DataFrame): Dữ liệu giá thực tế đã được xử lý.
+        - periods (int): Số ngày cần dự đoán (mặc định là 120 ngày).
+
+        Returns:
+        - forecast_series (Series): Chuỗi dự đoán giá trong tương lai.
+        """
         model = ExponentialSmoothing(
-            df["price"], trend="add", seasonal=None, seasonal_periods=7
+            df["price"], trend="add", seasonal="add", seasonal_periods=30
         )
         model_fit = model.fit()
-        forecast = model_fit.forecast(periods)
-        forecast_index = pd.date_range(
-            start=df.index[-1] + pd.Timedelta(days=1),
-            periods=periods,
-            freq="D",
-            tz="UTC",
-        )
-        forecast_series = pd.Series(forecast, index=forecast_index, name="price")
-
-        forecast_series = forecast_series.round(2)
+        forecast_series = model_fit.forecast(periods)
         return forecast_series
 
     def generate_highcharts_html(
-        self,
-        output_file: str = "output/synchronized_step_line_charts_with_forecast.html",
-    ):
+    self,
+    output_file: str = "output/synchronized_step_line_charts_with_forecast.html",
+):
+        """
+        Hàm tạo ra mã HTML cho biểu đồ Highcharts, bao gồm cả dự báo và lịch sử giá của trò chơi.
+        
+        Parameters:
+        - output_file (str): Đường dẫn đến file đầu ra chứa mã HTML của biểu đồ. Mặc định là "output/synchronized_step_line_charts_with_forecast.html".
+        
+        Returns:
+        - Không có giá trị trả về. Hàm sẽ lưu mã HTML vào file `output_file`.
+        """
+        # Lấy dữ liệu chuỗi và thời gian ranh giới giữa dữ liệu thực tế và dự báo
         series_data, boundary_timestamp = self.prepare_series_data()
 
         chart_configs = []
-        for i in range(
-            0, len(series_data), 3
-        ):  # Loop through real, connecting, and forecast series
+        
+        # Duyệt qua các chuỗi dữ liệu (bao gồm series thực tế, chuỗi nối và dự báo)
+        for i in range(0, len(series_data), 3):
+            # Cấu hình cho một biểu đồ
             config = {
                 "chart": {
-                    "type": "line",
-                    "zoomType": "x",
-                    "step": "left",  # Chuyển đồ thị thành kiểu step line với góc bo vuông
+                    "type": "line",  # Loại biểu đồ là line (đường)
+                    "zoomType": "x",  # Cho phép zoom vào trục x
+                    "step": "left",  # Dữ liệu sẽ được thể hiện dưới dạng step line (đường gấp khúc)
                     "style": {
                         "fontFamily": "'MyCustomFont', sans-serif"  # Thay đổi phông chữ của biểu đồ
                     },
                 },
                 "title": {
-                    "text": f"Lịch Sử Giá Của {series_data[i]['name']}",
+                    "text": f"Lịch Sử Giá Của {series_data[i]['name']}",  # Tiêu đề biểu đồ
                     "style": {
-                        "fontFamily": "'MyCustomFont', sans-serif",  # Thay đổi phông chữ của tiêu đề
-                        "fontSize": "14px",
+                        "fontFamily": "'MyCustomFont', sans-serif",  # Phông chữ tiêu đề
+                        "fontSize": "14px",  # Kích thước phông chữ
                     },
                 },
                 "xAxis": {
-                    "type": "datetime",
+                    "type": "datetime",  # Trục x hiển thị theo thời gian
                     "title": {
-                        "text": "Date",
+                        "text": "Date",  # Tiêu đề của trục x
                         "style": {
-                            "fontFamily": "'MyCustomFont', sans-serif",  # Thay đổi phông chữ của trục x
-                            "fontSize": "12px",
+                            "fontFamily": "'MyCustomFont', sans-serif",  # Phông chữ của trục x
+                            "fontSize": "12px",  # Kích thước phông chữ
                         },
                     },
-                    "crosshair": True,
+                    "crosshair": True,  # Hiển thị đường cắt ngang tại điểm dữ liệu
                     "plotLines": [
                         {
-                            "value": boundary_timestamp,
-                            "color": "red",
-                            "width": 2,
-                            "dashStyle": "Dash",
+                            "value": boundary_timestamp,  # Thời gian ranh giới giữa dữ liệu thực tế và dự báo
+                            "color": "red",  # Màu của đường phân cách
+                            "width": 2,  # Độ rộng của đường phân cách
+                            "dashStyle": "Dash",  # Kiểu đường phân cách là nét đứt
                             "label": {
-                                "text": "Thời Gian Hiện Tại",
-                                "align": "left",
+                                "text": "Thời Gian Hiện Tại",  # Nhãn của đường phân cách
+                                "align": "left",  # Vị trí nhãn
                                 "rotation": 0,
                                 "y": 15,
                                 "style": {
-                                    "fontFamily": "'MyCustomFont', sans-serif",  # Thay đổi phông chữ của nhãn
-                                    "fontSize": "10px",
-                                    "color": "rgba(0, 0, 0, 0.5)",
-                                    "fontWeight": "bold",
+                                    "fontFamily": "'MyCustomFont', sans-serif",  # Phông chữ của nhãn
+                                    "fontSize": "10px",  # Kích thước phông chữ của nhãn
+                                    "color": "rgba(0, 0, 0, 0.5)",  # Màu sắc của nhãn
+                                    "fontWeight": "bold",  # Định dạng phông chữ (đậm)
                                 },
                             },
                         }
@@ -260,43 +323,45 @@ class PriceEvolutionLineChart:
                 },
                 "yAxis": {
                     "title": {
-                        "text": "Giá (USD)",
+                        "text": "Giá (USD)",  # Tiêu đề của trục y
                         "style": {
-                            "fontFamily": "'MyCustomFont', sans-serif",  # Thay đổi phông chữ của trục y
-                            "fontSize": "12px",
+                            "fontFamily": "'MyCustomFont', sans-serif",  # Phông chữ của trục y
+                            "fontSize": "12px",  # Kích thước phông chữ
                         },
                     },
-                    "min": 0,
+                    "min": 0,  # Giá trị tối thiểu của trục y là 0
                 },
                 "tooltip": {
-                    "valueSuffix": " USD",
-                    "shared": True,
-                    "crosshairs": True,
-                    "dateTimeLabelFormats": {"day": "%e %b %Y"},
+                    "valueSuffix": " USD",  # Đơn vị hiển thị khi hover chuột
+                    "shared": True,  # Chia sẻ tooltip giữa các chuỗi
+                    "crosshairs": True,  # Hiển thị đường cắt ngang khi hover
+                    "dateTimeLabelFormats": {"day": "%e %b %Y"},  # Định dạng ngày tháng trong tooltip
                     "style": {
-                        "fontFamily": "'MyCustomFont', sans-serif",  # Thay đổi phông chữ của tooltip
-                        "fontSize": "10px",
+                        "fontFamily": "'MyCustomFont', sans-serif",  # Phông chữ của tooltip
+                        "fontSize": "10px",  # Kích thước phông chữ của tooltip
                     },
                 },
-                "series": [series_data[i], series_data[i + 1], series_data[i + 2]],
+                "series": [series_data[i], series_data[i + 1], series_data[i + 2]],  # Các chuỗi thực tế, nối và dự báo
                 "plotOptions": {
                     "series": {
-                        "step": "left",  # Cài đặt kiểu step line để tạo góc bo vuông cho dữ liệu
+                        "step": "left",  # Cài đặt kiểu step line
                         "point": {
                             "events": {
-                                "mouseOver": None,  # Placeholder for mouseOver event
-                                "mouseOut": None,  # Placeholder for mouseOut event
+                                "mouseOver": None,  # Placeholder cho sự kiện mouseOver
+                                "mouseOut": None,  # Placeholder cho sự kiện mouseOut
                             }
                         },
                     }
                 },
                 "legend": {
                     "itemStyle": {
-                        "fontFamily": "'MyCustomFont', sans-serif",  # Thay đổi phông chữ của chú giải (legend)
-                        "fontSize": "12px",
+                        "fontFamily": "'MyCustomFont', sans-serif",  # Phông chữ của chú giải (legend)
+                        "fontSize": "12px",  # Kích thước phông chữ của legend
                     }
                 },
             }
+            
+            # Thêm cấu hình của biểu đồ vào danh sách chart_configs
             chart_configs.append(config)
 
         # Start building the HTML content
@@ -379,11 +444,10 @@ class PriceEvolutionLineChart:
         <div id="container"></div>
         """
 
-        # Create the div container for each chart
         for i in range(len(chart_configs)):
             html_content += f'<div id="container-{i}" style="width: 100%; height: 400px; margin: 20px 0;"></div>'
 
-        # JavaScript to create and synchronize charts
+        
         html_content += """
         <script>
         let charts = [];
@@ -397,7 +461,6 @@ class PriceEvolutionLineChart:
             charts.push(chart_{i});
             """
 
-        # JavaScript for synchronized zoom, highlight, and tooltips
         html_content += """
             // Synchronize tooltips and crosshairs across all charts
             ['mousemove', 'touchmove', 'touchstart'].forEach(function (eventType) {
@@ -499,7 +562,6 @@ class PriceEvolutionLineChart:
         </html>
         """
 
-        # Write the HTML content to a file
         try:
             with open(output_file, "w", encoding="utf-8") as file:
                 file.write(html_content)

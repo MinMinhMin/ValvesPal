@@ -11,12 +11,12 @@ from statsmodels.tsa.holtwinters import ExponentialSmoothing
 class GameDealFetcher:
     def __init__(
         self,
-        api_key: str,
-        game_id: str,
-        shops_file: str,
-        country: str = "US",
-        shops: str = "61,35,16,6,20,24,37",
-        since: str = "2023-11-06T00:00:00Z",
+        api_key: str,               # api_key: Mã khóa API để truy cập dịch vụ.
+        game_id: str,               # game_id: ID của trò chơi cần lấy dữ liệu giảm giá.
+        shops_file: str,            # shops_file: Đường dẫn tới file JSON chứa dữ liệu các cửa hàng.
+        country: str = "US",        # country: Mã quốc gia, mặc định là "US".
+        shops: str = "61,35,16,6,20,24,37",  # shops: Danh sách các ID cửa hàng muốn lấy dữ liệu.
+        since: str = "2023-11-06T00:00:00Z",  # since: Thời gian bắt đầu lấy dữ liệu.
     ):
         self.api_key = api_key
         self.base_url = "https://api.isthereanydeal.com/games/history/v2"
@@ -30,6 +30,15 @@ class GameDealFetcher:
         self.shops_data = self.load_shops_data(shops_file)
 
     def load_shops_data(self, shops_file: str) -> Dict:
+        """
+        Hàm này dùng để đọc dữ liệu các cửa hàng từ file JSON.
+        
+        Parameters:
+        - shops_file: Đường dẫn tới file JSON chứa dữ liệu các cửa hàng.
+        
+        Returns:
+        - Một dictionary chứa dữ liệu các cửa hàng.
+        """
         try:
             with open(shops_file, "r", encoding="utf-8") as file:
                 return json.load(file)
@@ -37,6 +46,18 @@ class GameDealFetcher:
             raise Exception(f"Lỗi khi đọc file shops JSON: {str(e)}")
 
     def fetch_deal_history(self) -> Union[List, Dict]:
+        """
+        Hàm này gửi yêu cầu HTTP tới API để lấy lịch sử giảm giá của trò chơi.
+        
+        Parameters:
+        - Không có tham số đầu vào.
+        
+        Returns:
+        - Một danh sách hoặc dictionary chứa dữ liệu lịch sử giảm giá từ API.
+        
+        Lưu ý:
+        - Nếu có lỗi xảy ra trong quá trình gửi yêu cầu, hàm sẽ ném ra ngoại lệ.
+        """
         response = requests.get(self.base_url, params=self.params)
         if response.status_code == 200:
             return response.json()
@@ -44,6 +65,15 @@ class GameDealFetcher:
             raise Exception(f"Error: {response.status_code} - {response.text}")
 
     def format_data(self, data: Union[List, Dict]) -> List[Dict]:
+        """
+        Hàm này định dạng lại dữ liệu trả về từ API để dễ dàng xử lý và hiển thị.
+        
+        Parameters:
+        - data: Dữ liệu trả về từ API (dạng danh sách hoặc dictionary).
+        
+        Returns:
+        - Một danh sách các dictionary chứa thông tin giao dịch của các cửa hàng.
+        """
         if isinstance(data, dict) and "data" in data:
             data = data["data"]
 
@@ -76,15 +106,27 @@ class GameDealFetcher:
 # Class TotalSavingsColumnChart để tạo biểu đồ Column Chart
 class TotalSavingsColumnChart:
     def __init__(self, shops_data: List[Dict]):
+        """
+        Khởi tạo đối tượng để tạo biểu đồ cột về tổng tiết kiệm của các cửa hàng.
+        
+        Parameters:
+        - shops_data: Dữ liệu của các cửa hàng và thông tin giao dịch giảm giá từ API.
+        """
         self.shops_data = shops_data
 
     def process_raw_data(self) -> Dict[str, float]:
         """
-        Calculate total savings for each shop.
+        Tính tổng số tiền tiết kiệm được cho mỗi cửa hàng từ dữ liệu giảm giá.
+        
+        Parameters:
+        - Không có tham số đầu vào.
+        
+        Returns:
+        - Một dictionary với tên cửa hàng là key và tổng số tiền tiết kiệm (USD) là value.
         """
         total_savings = defaultdict(float)
 
-        # Calculate savings for each deal and accumulate by shop
+        # Tính toán tiết kiệm cho mỗi giao dịch và cộng dồn theo cửa hàng
         for shop in self.shops_data:
             shop_title = shop["shop_title"]
 
@@ -103,23 +145,29 @@ class TotalSavingsColumnChart:
         self, historical_data: Dict[str, float]
     ) -> Dict[str, float]:
         """
-        Predict the total savings for each shop for the next 12 months using Exponential Smoothing.
+        Dự đoán tổng số tiền tiết kiệm của mỗi cửa hàng trong 12 tháng tiếp theo bằng phương pháp Exponential Smoothing.
+        
+        Parameters:
+        - historical_data: Dữ liệu lịch sử về tiết kiệm của các cửa hàng.
+        
+        Returns:
+        - Một dictionary chứa dữ liệu dự đoán tổng tiết kiệm của các cửa hàng trong 12 tháng tới.
         """
         predicted_savings = {}
 
-        # Use Exponential Smoothing to predict future savings for each shop
+        # Dự đoán tiết kiệm trong tương lai cho mỗi cửa hàng
         for shop_title, total_savings in historical_data.items():
             if total_savings > 0:
-                # Assuming we have 12 months of historical data
+                # Giả sử có dữ liệu lịch sử 12 tháng
                 historical_values = [total_savings / 12] * 12
 
-                # Use Exponential Smoothing for prediction
+                # Sử dụng Exponential Smoothing để dự đoán
                 model = ExponentialSmoothing(
                     historical_values, trend="add", seasonal=None
                 ).fit()
                 forecast = model.forecast(12)
 
-                # Sum the forecast values to get the total predicted savings for the next year
+                # Tính tổng số tiền tiết kiệm dự đoán cho cả năm
                 predicted_savings[shop_title] = round(max(0, float(np.sum(forecast))),2)
             else:
                 predicted_savings[shop_title] = 0
@@ -127,11 +175,19 @@ class TotalSavingsColumnChart:
         return predicted_savings
 
     def generate_chart_config(self, title: str, data: Dict[str, float]):
-        # Prepare data for column chart
+        """
+        Tạo cấu hình cho biểu đồ cột.
+        
+        Parameters:
+        - title: Tiêu đề của biểu đồ.
+        - data: Dữ liệu cho biểu đồ, với các cửa hàng là key và tổng tiết kiệm là value.
+        
+        Returns:
+        - Cấu hình cho biểu đồ cột.
+        """
         categories = list(data.keys())
         values = list(data.values())
 
-        # Generate chart configuration for Column Chart
         chart_config = {
             "chart": {"type": "column", "style": {"fontFamily": "MyCustomFont"}},
             "title": {"text": title, "style": {"fontFamily": "MyCustomFont"}},
@@ -143,26 +199,33 @@ class TotalSavingsColumnChart:
         return chart_config
 
     def generate_html(self, output_file="total_savings_chart.html"):
-        # Process historical data to get total savings by shop
+        """
+        Hàm này tạo file HTML chứa hai biểu đồ: một biểu đồ lịch sử và một biểu đồ dự đoán.
+        
+        Parameters:
+        - output_file: Tên file HTML xuất ra (mặc định là "total_savings_chart.html").
+        
+        Returns:
+        - Không có giá trị trả về. Hàm sẽ tạo và lưu file HTML.
+        """
+        # Xử lý dữ liệu lịch sử để có tổng tiết kiệm của mỗi cửa hàng
         historical_data = self.process_raw_data()
 
-        # Generate chart configuration for historical data
+        # Tạo cấu hình biểu đồ cho dữ liệu lịch sử
         historical_chart_config = self.generate_chart_config(
             "Tổng tiết kiệm từ giảm giá cho mỗi cửa hàng (Lịch sử)", historical_data
         )
         historical_chart_json = json.dumps(historical_chart_config)
 
-        # Predict and process data for the next 12 months
+        # Dự đoán dữ liệu cho 12 tháng tới và tạo biểu đồ cho dữ liệu dự đoán
         predicted_data = self.predict_next_twelve_months(historical_data)
-
-        # Generate chart configuration for predicted data
         predicted_chart_config = self.generate_chart_config(
             "Dự đoán tổng tiết kiệm từ giảm giá cho mỗi cửa hàng (12 tháng tới)",
             predicted_data,
         )
         predicted_chart_json = json.dumps(predicted_chart_config)
 
-        # HTML Template with two charts side by side
+        # HTML Template 
         html_template = f"""
         <!DOCTYPE html>
         <html>

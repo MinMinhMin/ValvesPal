@@ -6,17 +6,16 @@ from collections import defaultdict
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
-
 # Class GameDealFetcher để lấy dữ liệu từ API
 class GameDealFetcher:
     def __init__(
         self,
-        api_key: str,
-        game_id: str,
-        shops_file: str,
-        country: str = "US",
-        shops: str = "61,35,16,6,20,24,37",
-        since: str = "2023-11-06T00:00:00Z",
+        api_key: str,  # Khóa API dùng để truy cập dịch vụ API
+        game_id: str,  # ID của trò chơi cần lấy thông tin giảm giá
+        shops_file: str,  # Đường dẫn tới file JSON chứa thông tin về các cửa hàng
+        country: str = "US",  # Quốc gia áp dụng, mặc định là "US"
+        shops: str = "61,35,16,6,20,24,37",  # Danh sách các ID của cửa hàng, ngăn cách bằng dấu phẩy
+        since: str = "2023-11-06T00:00:00Z",  # Ngày bắt đầu lấy dữ liệu
     ):
         self.api_key = api_key
         self.base_url = "https://api.isthereanydeal.com/games/history/v2"
@@ -30,6 +29,15 @@ class GameDealFetcher:
         self.shops_data = self.load_shops_data(shops_file)
 
     def load_shops_data(self, shops_file: str) -> Dict:
+        """
+        Đọc dữ liệu từ file JSON chứa thông tin về các cửa hàng.
+
+        Parameters:
+        - shops_file (str): Đường dẫn tới file JSON chứa thông tin cửa hàng.
+
+        Returns:
+        - Dict: Thông tin cửa hàng dưới dạng từ điển.
+        """
         try:
             with open(shops_file, "r", encoding="utf-8") as file:
                 return json.load(file)
@@ -37,6 +45,12 @@ class GameDealFetcher:
             raise Exception(f"Lỗi khi đọc file shops JSON: {str(e)}")
 
     def fetch_deal_history(self) -> Union[List, Dict]:
+        """
+        Lấy dữ liệu lịch sử giảm giá từ API.
+
+        Returns:
+        - Union[List, Dict]: Dữ liệu giảm giá từ API.
+        """
         response = requests.get(self.base_url, params=self.params)
         if response.status_code == 200:
             return response.json()
@@ -44,6 +58,15 @@ class GameDealFetcher:
             raise Exception(f"Error: {response.status_code} - {response.text}")
 
     def format_data(self, data: Union[List, Dict]) -> List[Dict]:
+        """
+        Định dạng lại dữ liệu để dễ dàng xử lý.
+
+        Parameters:
+        - data (Union[List, Dict]): Dữ liệu thô từ API.
+
+        Returns:
+        - List[Dict]: Dữ liệu đã được định dạng.
+        """
         if isinstance(data, dict) and "data" in data:
             data = data["data"]
 
@@ -76,15 +99,24 @@ class GameDealFetcher:
 # Class DiscountSavingsPieChart để tạo biểu đồ Pie Chart
 class DiscountSavingsPieChart:
     def __init__(self, shops_data: List[Dict]):
+        """
+        Khởi tạo đối tượng DiscountSavingsPieChart.
+
+        Parameters:
+        - shops_data (List[Dict]): Danh sách thông tin về các cửa hàng và các deal tương ứng.
+        """
         self.shops_data = shops_data
 
     def process_raw_data(self) -> Dict[str, float]:
         """
-        Calculate total savings for each shop.
+        Tính toán tổng số tiền tiết kiệm từ các đợt giảm giá cho mỗi cửa hàng.
+
+        Returns:
+        - Dict[str, float]: Tổng số tiền tiết kiệm theo từng cửa hàng.
         """
         total_savings = defaultdict(float)
 
-        # Calculate savings for each deal and accumulate by shop
+        # Tính tổng số tiền tiết kiệm cho từng deal và cộng dồn theo từng cửa hàng
         for shop in self.shops_data:
             shop_title = shop["shop_title"]
 
@@ -102,38 +134,49 @@ class DiscountSavingsPieChart:
         self, processed_data: Dict[str, float]
     ) -> Dict[str, float]:
         """
-        Predict the total savings for the next 12 months using linear regression.
+        Dự đoán tổng số tiền tiết kiệm trong 12 tháng tiếp theo cho mỗi cửa hàng.
+
+        Parameters:
+        - processed_data (Dict[str, float]): Dữ liệu đã xử lý, chứa tổng số tiền tiết kiệm theo từng cửa hàng.
+
+        Returns:
+        - Dict[str, float]: Dự đoán tổng số tiền tiết kiệm trong năm tới cho mỗi cửa hàng.
         """
         predicted_savings = {}
 
-        # Use Linear Regression to predict future savings for each shop
+        # Sử dụng hồi quy tuyến tính để dự đoán tiết kiệm tương lai cho từng cửa hàng
         for shop_title, total_savings in processed_data.items():
-            # Let's assume that savings increase linearly for simplicity
             if total_savings > 0:
-                # Prepare the data for linear regression
-                x = np.arange(12).reshape(-1, 1)  # We assume we have 12 months of data
-                y = np.full(
-                    (12,), total_savings / 12
-                )  # Assume uniform savings each month
+                # Chuẩn bị dữ liệu cho mô hình hồi quy tuyến tính
+                x = np.arange(12).reshape(-1, 1)  # Giả định có 12 tháng dữ liệu lịch sử
+                y = np.full((12,), total_savings / 12)  # Tiết kiệm đều trong mỗi tháng
 
                 model = LinearRegression().fit(x, y)
-                future_x = np.arange(12, 24).reshape(
-                    -1, 1
-                )  # Predict for the next 12 months
+                future_x = np.arange(12, 24).reshape(-1, 1)  # Dự đoán cho 12 tháng tiếp theo
                 predicted_values = model.predict(future_x)
 
-                # Sum the predicted values to get total savings prediction for the next year
-                predicted_savings[shop_title] = round(max(0, float(np.sum(predicted_values))),2)
+                # Tổng các giá trị dự đoán để có tổng tiết kiệm trong năm tới
+                predicted_savings[shop_title] = round(max(0, float(np.sum(predicted_values))), 2)
             else:
                 predicted_savings[shop_title] = 0
 
         return predicted_savings
 
     def generate_chart_config(self, title: str, data: Dict[str, float]):
-        # Prepare data for pie chart
+        """
+        Tạo cấu hình biểu đồ Pie Chart.
+
+        Parameters:
+        - title (str): Tiêu đề của biểu đồ.
+        - data (Dict[str, float]): Dữ liệu cần biểu diễn trên biểu đồ.
+
+        Returns:
+        - dict: Cấu hình biểu đồ.
+        """
+        # Chuẩn bị dữ liệu cho biểu đồ pie chart
         series_data = [{"name": shop, "y": savings} for shop, savings in data.items()]
 
-        # Generate chart configuration for Pie Chart
+        # Tạo cấu hình cho biểu đồ Pie Chart
         chart_config = {
             "chart": {"type": "pie", "style": {"fontFamily": "MyCustomFont"}},
             "title": {"text": title, "style": {"fontFamily": "MyCustomFont"}},
@@ -163,22 +206,28 @@ class DiscountSavingsPieChart:
         return chart_config
 
     def generate_html(self, output_file="discount_savings_pie_chart.html"):
-        # Process historical data to get total savings by shop
+        """
+        Tạo file HTML để hiển thị biểu đồ Pie Chart.
+
+        Parameters:
+        - output_file (str): Tên của file HTML đầu ra, mặc định là 'discount_savings_pie_chart.html'.
+        """
+        # Xử lý dữ liệu lịch sử để có tổng số tiền tiết kiệm theo cửa hàng
         historical_data = self.process_raw_data()
 
-        # Generate chart configuration for historical data
+        # Tạo cấu hình cho biểu đồ dựa trên dữ liệu lịch sử
         historical_chart_config = self.generate_chart_config(
-            "Thị phần tổng số tiền tiết kiệm chiết khấu theo cửa hàng (Lịch sử)",
+            "Tổng số tiền tiết kiệm từ giảm giá theo cửa hàng (Lịch sử)",
             historical_data,
         )
         historical_chart_json = json.dumps(historical_chart_config)
 
-        # Predict and process data for the next 12 months
+        # Dự đoán dữ liệu tiết kiệm cho 12 tháng tiếp theo
         predicted_data = self.predict_next_twelve_months(historical_data)
 
-        # Generate chart configuration for predicted data
+        # Tạo cấu hình cho biểu đồ dựa trên dữ liệu dự đoán
         predicted_chart_config = self.generate_chart_config(
-            "Dự đoán thị phần tổng số tiền tiết kiệm chiết khấu theo cửa hàng (12 tháng tới)",
+            "Dự đoán tổng số tiền tiết kiệm từ giảm giá theo cửa hàng (12 tháng tiếp theo)",
             predicted_data,
         )
         predicted_chart_json = json.dumps(predicted_chart_config)
