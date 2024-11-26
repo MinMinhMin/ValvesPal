@@ -471,6 +471,7 @@ class PriceEvolutionLineChart:
             // Add reset button to reset all charts zoom
             const resetButton = document.createElement('button');
             resetButton.innerHTML = 'Reset Zoom';
+            resetButton.style.fontFamily = 'MyCustomFont, sans-serif';
             resetButton.style.display = 'block';
             resetButton.style.margin = '20px auto';
             resetButton.addEventListener('click', resetZoom);
