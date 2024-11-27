@@ -3,15 +3,25 @@ import pandas as pd
 import pyautogui
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
 
 
 def getHistoryUpdate(steam_id):
     url = f"https://steamdb.info/app/{steam_id}/patchnotes/"
-    driver = webdriver.Chrome()  # Ensure you have ChromeDriver installed
 
-    # Open the URL and get the page source
+    chrome_options = Options()
+
+    
+    chrome_options.add_argument("--window-size=400,300")
+
+    
+    chrome_options.add_argument("--window-position=500,300")
+
+    driver = webdriver.Chrome(options=chrome_options)
+
+
     driver.get(url)
-    pyautogui.hotkey("win", "down")  # Minimizes the window
+    pyautogui.hotkey("win", "down")  
 
     html = driver.page_source
     driver.quit()

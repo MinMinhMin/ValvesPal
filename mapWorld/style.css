@@ -1,57 +1,54 @@
-/* Style for the tabs container */
 @font-face {
   font-family: "MyCustomFont";
-  src: url("../FVF_Fernando_08.ttf") format("truetype"); /* Adjust the path if needed */
+  src: url("../FVF_Fernando_08.ttf") format("truetype"); 
   font-weight: normal;
   font-style: normal;
 }
 body{
-  font-family: "MyCustomFont", sans-serif; /* Fallback to sans-serif */
+  font-family: "MyCustomFont", sans-serif; 
 }
 
 .tabs ul {
   list-style-type: none;
   padding: 0;
   display: flex;
-  justify-content: center; /* Center-align the tabs */
-  gap: 15px; /* Spacing between tabs */
-  margin-bottom: 20px; /* Space below the tabs */
+  justify-content: center; 
+  gap: 15px; 
+  margin-bottom: 20px; 
 }
 
-/* Style for each tab item */
+
 .tabs li {
   display: inline;
-  margin: 0; /* Remove default margin */
+  margin: 0; 
 }
 
-/* Style for the tab links */
+
 .tabs a {
   text-decoration: none;
   font-weight: bold;
   padding: 12px 20px;
   background-color: #f1f1f1;
   border: 1px solid #ccc;
-  border-radius: 5px; /* Rounded corners */
-  transition: all 0.3s ease; /* Smooth transition for hover effect */
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  border-radius: 5px; 
+  transition: all 0.3s ease; 
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); 
 }
 
-/* Hover effect for tab links */
+
 .tabs a:hover {
-  background-color: #288cdf; /* Green hover color */
+  background-color: #288cdf; 
   color: white;
-  transform: translateY(-2px); /* Slight lift effect */
-  box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2); /* Enhanced shadow */
+  transform: translateY(-2px); 
+  box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2); 
 }
 
-/* Style for active tab link */
 .tabs a.active {
-  background-color: #288cdf; /* Green for active */
+  background-color: #288cdf; 
   color: white;
   border-color: #288cdf;
 }
 
-/* Style for the tab content */
 .tab-content {
   display: none;
   padding: 20px;
@@ -60,10 +57,10 @@ body{
   border-radius: 5px;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
   margin: 0 auto;
-  max-width: 1000px; /* Centered and responsive content area */
+  max-width: 1000px; /
 }
 
-/* Show active tab content */
+
 .tab-content.active {
   display: block;
 }

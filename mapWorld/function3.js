@@ -12,6 +12,10 @@
         Highcharts.mapChart('container3', {
             chart: {
                 map: topology,
+                style: {
+                    fontFamily: 'MyCustomFont',
+                    fontSize: '13px'
+                }
             },
 
             title: {
