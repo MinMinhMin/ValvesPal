@@ -7,7 +7,6 @@ import datetime
 from typing import Dict, List, Union
 from collections import defaultdict
 
-
 # Class GameDealFetcher để lấy dữ liệu từ API
 class GameDealFetcher:
     def __init__(
@@ -19,6 +18,7 @@ class GameDealFetcher:
         shops: str = "61,35,16,6,20,24,37",
         since: str = "2023-11-06T00:00:00Z",
     ):
+        # Khởi tạo với các tham số cần thiết như api_key, game_id, file JSON chứa danh sách shop, quốc gia, cửa hàng và ngày bắt đầu lấy dữ liệu
         self.api_key = api_key
         self.base_url = "https://api.isthereanydeal.com/games/history/v2"
         self.params = {
@@ -31,6 +31,7 @@ class GameDealFetcher:
         self.shops_data = self.load_shops_data(shops_file)
 
     def load_shops_data(self, shops_file: str) -> Dict:
+        # Đọc file JSON chứa thông tin các cửa hàng
         try:
             with open(shops_file, "r", encoding="utf-8") as file:
                 return json.load(file)
@@ -38,6 +39,7 @@ class GameDealFetcher:
             raise Exception(f"Lỗi khi đọc file shops JSON: {str(e)}")
 
     def fetch_deal_history(self) -> Union[List, Dict]:
+        # Gửi yêu cầu đến API để lấy dữ liệu giảm giá
         response = requests.get(self.base_url, params=self.params)
         if response.status_code == 200:
             return response.json()
@@ -45,12 +47,14 @@ class GameDealFetcher:
             raise Exception(f"Error: {response.status_code} - {response.text}")
 
     def format_data(self, data: Union[List, Dict]) -> List[Dict]:
+        # Định dạng lại dữ liệu để dễ xử lý
         if isinstance(data, dict) and "data" in data:
             data = data["data"]
 
         formatted_data = []
 
         for item in data:
+            # Lấy ID của shop và tìm tên shop từ dữ liệu shops_data
             shop_id = str(item["shop"]["id"])
             shop_name = self.shops_data.get(shop_id, "Unknown Shop")
             timestamp = item["timestamp"]
@@ -61,40 +65,49 @@ class GameDealFetcher:
                 "cut": item["deal"]["cut"],
             }
 
+            # Kiểm tra xem cửa hàng này đã có trong formatted_data chưa
             shop_entry = next(
                 (s for s in formatted_data if s["shop_id"] == shop_id), None
             )
 
+            # Nếu chưa, thêm cửa hàng vào formatted_data
             if not shop_entry:
                 shop_entry = {"shop_id": shop_id, "shop_title": shop_name, "deals": []}
                 formatted_data.append(shop_entry)
 
+            # Thêm thông tin deal vào danh sách các deal của cửa hàng đó
             shop_entry["deals"].append(deal_info)
 
         return formatted_data
 
-
 # Class DiscountFrequencyHeatmap để tạo biểu đồ Heatmap
 class DiscountFrequencyHeatmap:
     def __init__(self, shops_data: List[Dict]):
+        # Khởi tạo với dữ liệu cửa hàng đã được định dạng
         self.shops_data = shops_data
 
     def process_raw_data(self) -> Dict:
+        # Xử lý dữ liệu thô để tạo ra tần suất giảm giá
         discount_frequency = defaultdict(lambda: defaultdict(int))
         for shop in self.shops_data:
             shop_title = shop["shop_title"]
 
+            # Duyệt qua tất cả các deal của từng cửa hàng
             for deal in shop["deals"]:
                 date = datetime.datetime.fromisoformat(deal["timestamp"]).strftime(
                     "%Y-%m"
                 )
                 discount = deal["cut"]
-                discount_frequency[(shop_title, date)][discount] += 1
+                # Tăng giá trị tần suất cho mức giảm giá nhất định của tháng đó
+                if deal["cut"] > 0:
+                    discount_frequency[(shop_title, date)][discount] += 1
 
         heatmap_data = []
+        # Lấy danh sách cửa hàng và danh sách tháng
         shop_titles = sorted({shop["shop_title"] for shop in self.shops_data})
         dates = sorted({date for (_, date) in discount_frequency.keys()})
 
+        # Tạo dữ liệu cho heatmap dựa trên tần suất giảm giá
         for i, shop in enumerate(shop_titles):
             for j, date in enumerate(dates):
                 total_frequency = sum(discount_frequency[(shop, date)].values())
@@ -110,11 +123,13 @@ class DiscountFrequencyHeatmap:
     def predict_next_three_months(
         self, discount_frequency: defaultdict, last_date: str
     ) -> List[List[int]]:
+        # Dự đoán tần suất giảm giá trong ba tháng tiếp theo
         shop_titles = sorted({shop["shop_title"] for shop in self.shops_data})
         dates = pd.to_datetime(
             sorted({date for (_, date) in discount_frequency.keys()})
         )
 
+        # Xác định ba tháng tiếp theo từ tháng cuối cùng
         next_three_months = []
         last_month = pd.to_datetime(last_date)
 
@@ -123,12 +138,14 @@ class DiscountFrequencyHeatmap:
             next_three_months.append(next_month)
 
         predictions = []
+        # Dự đoán tần suất cho từng cửa hàng
         for i, shop in enumerate(shop_titles):
             shop_data = [
                 sum(discount_frequency[(shop, date.strftime("%Y-%m"))].values())
                 for date in dates
             ]
             if len(shop_data) > 1:
+                # Sử dụng mô hình hồi quy tuyến tính để dự đoán
                 x = np.arange(len(shop_data)).reshape(-1, 1)
                 y = np.array(shop_data)
                 model = LinearRegression().fit(x, y)
@@ -141,22 +158,26 @@ class DiscountFrequencyHeatmap:
                     ]
                 )
             else:
+                # Nếu không có đủ dữ liệu, dự đoán mặc định là 0
                 predictions.extend([[i, len(dates) + j, 0] for j in range(3)])
 
         return predictions, next_three_months
 
     def generate_chart_config(self):
+        # Tạo cấu hình biểu đồ heatmap cho dữ liệu lịch sử và dữ liệu dự đoán
         processed_data = self.process_raw_data()
         shop_titles = processed_data["shop_titles"]
         dates = processed_data["dates"]
         heatmap_data = processed_data["heatmap_data"]
 
+        # Gọi hàm dự đoán cho ba tháng tiếp theo
         prediction_data, next_three_months = self.predict_next_three_months(
             processed_data["discount_frequency"], dates[-1]
         )
         extended_dates = dates + next_three_months
         prediction_heatmap_data = prediction_data
 
+        # Cấu hình biểu đồ lịch sử
         original_chart_config = {
             "chart": {
                 "type": "heatmap",
@@ -165,7 +186,7 @@ class DiscountFrequencyHeatmap:
                 "style": {"fontFamily": "MyCustomFont"},
             },
             "title": {
-                "text": "Phân Tích Tần Suất Giảm Giá Cho Mỗi Cửa Hàng",
+                "text": "Tần suất giảm giá theo cửa hàng trong lịch sử",
                 "style": {"fontFamily": "MyCustomFont"},
             },
             "xAxis": {
@@ -205,6 +226,7 @@ class DiscountFrequencyHeatmap:
             ],
         }
 
+        # Cấu hình biểu đồ dự đoán
         prediction_chart_config = {
             "chart": {
                 "type": "heatmap",
@@ -213,7 +235,7 @@ class DiscountFrequencyHeatmap:
                 "style": {"fontFamily": "MyCustomFont"},
             },
             "title": {
-                "text": "Dự Đoán Tần Suất Giảm Giá Trong Ba Tháng Tới",
+                "text": "Dự đoán tần suất giảm giá của các cửa hàng trong ba tháng tiếp theo",
                 "style": {"fontFamily": "MyCustomFont"},
             },
             "xAxis": {
@@ -390,8 +412,8 @@ class DiscountFrequencyHeatmap:
 def main():
     # Các thông tin cần thiết
     api_key = "07b0e806aacf15f38b230a850b424b2542dd71af"
-    game_id = "018d937f-590c-728b-ac35-38bcff85f086"
-    shops_file = "shops.json"
+    game_id = "018d937e-fcfb-7291-bf00-f651841d24d4"
+    shops_file = "DiscountFrequencyAnalysis/shops.json"
 
     # Khởi tạo GameDealFetcher để lấy dữ liệu từ API
     fetcher = GameDealFetcher(api_key, game_id, shops_file)

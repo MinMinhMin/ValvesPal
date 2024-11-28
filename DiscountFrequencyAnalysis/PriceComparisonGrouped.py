@@ -8,7 +8,7 @@ from typing import Dict, List, Union
 from collections import defaultdict
 
 
-# Class GameDealFetcher to fetch data from API
+# Class GameDealFetcher để lấy dữ liệu từ API
 class GameDealFetcher:
     def __init__(
         self,
@@ -19,6 +19,16 @@ class GameDealFetcher:
         shops: str = "61,35,16,6,20,24,37",
         since: str = "2023-11-06T00:00:00Z",
     ):
+        """
+        Khởi tạo đối tượng GameDealFetcher với các tham số cấu hình để lấy dữ liệu từ API.
+        
+        :param api_key: Khóa API để truy cập vào dịch vụ.
+        :param game_id: ID của trò chơi cần lấy dữ liệu.
+        :param shops_file: Đường dẫn tới tệp JSON chứa thông tin các cửa hàng.
+        :param country: Quốc gia mà người dùng muốn lấy dữ liệu, mặc định là "US".
+        :param shops: Danh sách các cửa hàng mà người dùng muốn lấy thông tin, mặc định là "61,35,16,6,20,24,37".
+        :param since: Thời gian bắt đầu để lấy dữ liệu, mặc định là "2023-11-06T00:00:00Z".
+        """
         self.api_key = api_key
         self.base_url = "https://api.isthereanydeal.com/games/history/v2"
         self.params = {
@@ -31,20 +41,37 @@ class GameDealFetcher:
         self.shops_data = self.load_shops_data(shops_file)
 
     def load_shops_data(self, shops_file: str) -> Dict:
+        """
+        Tải dữ liệu cửa hàng từ tệp JSON.
+
+        :param shops_file: Đường dẫn tới tệp JSON chứa thông tin các cửa hàng.
+        :return: Dữ liệu cửa hàng dưới dạng từ điển.
+        """
         try:
             with open(shops_file, "r", encoding="utf-8") as file:
                 return json.load(file)
         except Exception as e:
-            raise Exception(f"Error reading shops JSON file: {str(e)}")
+            raise Exception(f"Lỗi khi đọc tệp JSON cửa hàng: {str(e)}")
 
     def fetch_deal_history(self) -> Union[List, Dict]:
+        """
+        Lấy lịch sử giảm giá từ API.
+
+        :return: Dữ liệu lịch sử giảm giá (dạng danh sách hoặc từ điển).
+        """
         response = requests.get(self.base_url, params=self.params)
         if response.status_code == 200:
             return response.json()
         else:
-            raise Exception(f"Error: {response.status_code} - {response.text}")
+            raise Exception(f"Lỗi: {response.status_code} - {response.text}")
 
     def format_data(self, data: Union[List, Dict]) -> List[Dict]:
+        """
+        Định dạng dữ liệu từ API thành cấu trúc có tổ chức hơn để dễ xử lý.
+
+        :param data: Dữ liệu từ API trả về (dạng danh sách hoặc từ điển).
+        :return: Dữ liệu đã được định dạng dưới dạng danh sách các từ điển.
+        """
         if isinstance(data, dict) and "data" in data:
             data = data["data"]
 
@@ -52,7 +79,7 @@ class GameDealFetcher:
 
         for item in data:
             shop_id = str(item["shop"]["id"])
-            shop_name = self.shops_data.get(shop_id, "Unknown Shop")
+            shop_name = self.shops_data.get(shop_id, "Cửa hàng không xác định")
             timestamp = item["timestamp"]
             deal_info = {
                 "timestamp": timestamp,
@@ -74,21 +101,29 @@ class GameDealFetcher:
         return formatted_data
 
 
-# Class PriceComparisonGroupedBarChart to generate Grouped Bar Chart
+# Class PriceComparisonGroupedBarChart để tạo biểu đồ cột nhóm
 class PriceComparisonGroupedBarChart:
     def __init__(self, shops_data: List[Dict]):
+        """
+        Khởi tạo đối tượng PriceComparisonGroupedBarChart với dữ liệu các cửa hàng.
+
+        :param shops_data: Dữ liệu các cửa hàng đã được định dạng.
+        """
         self.shops_data = shops_data
 
     def process_raw_data(self) -> List[Dict]:
+        """
+        Xử lý dữ liệu thô để tạo dữ liệu cho biểu đồ cột nhóm.
+
+        :return: Dữ liệu đã xử lý, dạng danh sách các từ điển chứa thông tin giá và thời gian.
+        """
         all_dates = set()
         for shop in self.shops_data:
             for deal in shop["deals"]:
-                date = deal["timestamp"].split("T")[0][
-                    :7
-                ]  # Extract only the year and month part
+                date = deal["timestamp"].split("T")[0][:7]  # Lấy chỉ phần năm và tháng
                 all_dates.add(date)
 
-        # Generate complete set of months from the earliest date to the latest
+        # Tạo danh sách tất cả các tháng từ tháng đầu tiên đến tháng cuối cùng
         all_dates = (
             pd.date_range(start=min(all_dates), end=max(all_dates), freq="MS")
             .strftime("%Y-%m")
@@ -109,9 +144,7 @@ class PriceComparisonGroupedBarChart:
                     if deal["timestamp"].split("T")[0][:7] <= date
                 ]
                 if relevant_deals:
-                    latest_deal = sorted(relevant_deals, key=lambda x: x["timestamp"])[
-                        -1
-                    ]
+                    latest_deal = sorted(relevant_deals, key=lambda x: x["timestamp"])[-1]
                     latest_prices[shop_id] = latest_deal["price"]
 
                 if shop_id in latest_prices:
@@ -124,6 +157,12 @@ class PriceComparisonGroupedBarChart:
         return formatted_data
 
     def predict_next_twelve_months(self, processed_data: List[Dict]) -> List[Dict]:
+        """
+        Dự đoán giá trong 12 tháng tiếp theo dựa trên dữ liệu đã xử lý.
+
+        :param processed_data: Dữ liệu đã xử lý cho biểu đồ cột nhóm.
+        :return: Dữ liệu dự đoán giá cho 12 tháng tiếp theo.
+        """
         all_dates = pd.to_datetime([entry["time_point"] for entry in processed_data])
         next_twelve_months = [
             (all_dates[-1] + pd.DateOffset(months=i)).strftime("%Y-%m")
@@ -146,9 +185,7 @@ class PriceComparisonGroupedBarChart:
                 x = np.arange(len(shop_prices)).reshape(-1, 1)
                 y = np.array(shop_prices)
                 model = LinearRegression().fit(x, y)
-                future_x = np.arange(len(shop_prices), len(shop_prices) + 12).reshape(
-                    -1, 1
-                )
+                future_x = np.arange(len(shop_prices), len(shop_prices) + 12).reshape(-1, 1)
                 predicted_values = model.predict(future_x)
 
                 for i, date in enumerate(next_twelve_months):
@@ -156,7 +193,7 @@ class PriceComparisonGroupedBarChart:
                         {
                             "time_point": date,
                             "shop_name": shop_name,
-                            "predicted_price": max(0, float(predicted_values[i])),
+                            "predicted_price": round(max(0, float(predicted_values[i])), 2),
                         }
                     )
 
@@ -173,9 +210,14 @@ class PriceComparisonGroupedBarChart:
         return formatted_data
 
     def generate_chart_config(self):
+        """
+        Tạo cấu hình cho hai biểu đồ cột nhóm: một cho dữ liệu gốc và một cho dữ liệu dự đoán.
+
+        :return: Cấu hình biểu đồ cho dữ liệu gốc và dự đoán.
+        """
         processed_data = self.process_raw_data()
 
-        # Original Data for Grouped Bar Chart
+        # Dữ liệu gốc cho Biểu đồ cột nhóm
         time_points = [entry["time_point"] for entry in processed_data]
         shop_names = sorted(
             {shop for entry in processed_data for shop in entry["prices"].keys()}
@@ -219,7 +261,7 @@ class PriceComparisonGroupedBarChart:
             "series": series,
         }
 
-        # Predicted Data for Next Twelve Months
+        # Dữ liệu dự đoán cho 12 tháng tiếp theo
         predicted_data = self.predict_next_twelve_months(processed_data)
         predicted_time_points = [entry["time_point"] for entry in predicted_data]
         prediction_series = []
@@ -265,6 +307,11 @@ class PriceComparisonGroupedBarChart:
         return original_chart_config, prediction_chart_config
 
     def generate_html(self, output_file="grouped_bar_chart.html"):
+        """
+        Tạo và lưu file HTML với hai biểu đồ cột nhóm.
+
+        :param output_file: Đường dẫn đến tệp HTML sẽ được tạo ra, mặc định là "grouped_bar_chart.html".
+        """
         original_chart_config, prediction_chart_config = self.generate_chart_config()
         original_chart_json = json.dumps(original_chart_config)
         prediction_chart_json = json.dumps(prediction_chart_config)
@@ -398,7 +445,7 @@ def main():
     # Necessary Information
     api_key = "07b0e806aacf15f38b230a850b424b2542dd71af"
     game_id = "018d937f-590c-728b-ac35-38bcff85f086"
-    shops_file = "shops.json"
+    shops_file = "DiscountFrequencyAnalysis/shops.json"
 
     # Initialize GameDealFetcher to fetch data from API
     fetcher = GameDealFetcher(api_key, game_id, shops_file)

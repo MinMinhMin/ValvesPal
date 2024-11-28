@@ -10,12 +10,12 @@ from sklearn.linear_model import LinearRegression
 class GameDealFetcher:
     def __init__(
         self,
-        api_key: str,
-        game_id: str,
-        shops_file: str,
-        country: str = "US",
-        shops: str = "61,35,16,6,20,24,37",
-        since: str = "2023-11-06T00:00:00Z",
+        api_key: str,  # Khóa API để xác thực truy cập
+        game_id: str,  # ID của trò chơi cần lấy thông tin giảm giá
+        shops_file: str,  # Đường dẫn đến file JSON chứa danh sách các cửa hàng
+        country: str = "US",  # Quốc gia mặc định là "US"
+        shops: str = "61,35,16,6,20,24,37",  # Danh sách các ID cửa hàng, ngăn cách bằng dấu phẩy
+        since: str = "2023-11-06T00:00:00Z",  # Ngày bắt đầu lấy dữ liệu
     ):
         self.api_key = api_key
         self.base_url = "https://api.isthereanydeal.com/games/history/v2"
@@ -29,6 +29,15 @@ class GameDealFetcher:
         self.shops_data = self.load_shops_data(shops_file)
 
     def load_shops_data(self, shops_file: str) -> Dict:
+        """
+        Đọc dữ liệu từ file JSON chứa thông tin cửa hàng.
+
+        Parameters:
+        - shops_file (str): Đường dẫn đến file JSON chứa thông tin về các cửa hàng.
+
+        Returns:
+        - Dict: Từ điển chứa thông tin về cửa hàng.
+        """
         try:
             with open(shops_file, "r", encoding="utf-8") as file:
                 return json.load(file)
@@ -36,6 +45,12 @@ class GameDealFetcher:
             raise Exception(f"Lỗi khi đọc file shops JSON: {str(e)}")
 
     def fetch_deal_history(self) -> Union[List, Dict]:
+        """
+        Lấy dữ liệu lịch sử giảm giá từ API.
+
+        Returns:
+        - Union[List, Dict]: Dữ liệu giảm giá từ API.
+        """
         response = requests.get(self.base_url, params=self.params)
         if response.status_code == 200:
             return response.json()
@@ -43,6 +58,15 @@ class GameDealFetcher:
             raise Exception(f"Error: {response.status_code} - {response.text}")
 
     def format_data(self, data: Union[List, Dict]) -> List[Dict]:
+        """
+        Định dạng lại dữ liệu để dễ dàng xử lý.
+
+        Parameters:
+        - data (Union[List, Dict]): Dữ liệu thô từ API.
+
+        Returns:
+        - List[Dict]: Dữ liệu đã được định dạng.
+        """
         if isinstance(data, dict) and "data" in data:
             data = data["data"]
 
@@ -75,37 +99,55 @@ class GameDealFetcher:
 # Class MaximumMinimumDiscountBoxPlot để tạo biểu đồ Box Plot
 class MaximumMinimumDiscountBoxPlot:
     def __init__(self, shops_data: List[Dict]):
+        """
+        Khởi tạo đối tượng MaximumMinimumDiscountBoxPlot.
+
+        Parameters:
+        - shops_data (List[Dict]): Danh sách thông tin về các cửa hàng và các giảm giá tương ứng.
+        """
         self.shops_data = shops_data
 
     def process_raw_data(self, raw_data: List[Dict]) -> None:
+        """
+        Xử lý dữ liệu thô thành dữ liệu phù hợp cho biểu đồ Box Plot.
+
+        Parameters:
+        - raw_data (List[Dict]): Dữ liệu thô từ API đã được định dạng.
+        """
         self.shops_data = []
         for shop in raw_data:
             shop_title = shop.get("shop_title", "Unknown Shop")
             deals = shop.get("deals", [])
-            discounts = [deal["cut"] for deal in deals if "cut" in deal]
+            discounts = [round(deal["cut"], 2) for deal in deals if "cut" in deal]
 
             self.shops_data.append({"shop_title": shop_title, "discounts": discounts})
 
-    def predict_next_twelve_months(self):
+    def predict_next_twelve_months(self) -> List[Dict]:
+        """
+        Dự đoán các mức giảm giá tối đa, tối thiểu trong 12 tháng tiếp theo cho mỗi cửa hàng.
+
+        Returns:
+        - List[Dict]: Dữ liệu dự đoán cho 12 tháng tiếp theo cho mỗi cửa hàng.
+        """
         predicted_data = []
         for shop in self.shops_data:
             discounts = shop["discounts"]
             if len(discounts) > 1:
-                # Using linear regression to predict future discounts
+                # Sử dụng hồi quy tuyến tính để dự đoán mức giảm giá trong tương lai
                 x = np.arange(len(discounts)).reshape(-1, 1)
                 y = np.array(discounts)
                 model = LinearRegression().fit(x, y)
                 future_x = np.arange(len(discounts), len(discounts) + 12).reshape(-1, 1)
                 predicted_values = model.predict(future_x)
                 predicted_values = [
-                    max(0, val) for val in predicted_values
-                ]  # Ensure no negative predictions
+                    round(max(0, val), 2) for val in predicted_values
+                ]  # Bảo đảm không có giá trị âm
 
                 predicted_data.append(
                     {"shop_title": shop["shop_title"], "discounts": predicted_values}
                 )
             else:
-                # Not enough data to predict
+                # Nếu không đủ dữ liệu để dự đoán
                 predicted_data.append(
                     {"shop_title": shop["shop_title"], "discounts": [0] * 12}
                 )
@@ -113,16 +155,27 @@ class MaximumMinimumDiscountBoxPlot:
         return predicted_data
 
     def generate_chart_config(self, title: str, shop_data: List[Dict]):
-        categories = []
-        data = []
-        outliers = []
-        mean_values = []
+        """
+        Tạo cấu hình biểu đồ Box Plot.
+
+        Parameters:
+        - title (str): Tiêu đề của biểu đồ.
+        - shop_data (List[Dict]): Dữ liệu các cửa hàng để tạo biểu đồ.
+
+        Returns:
+        - dict: Cấu hình biểu đồ.
+        """
+        categories = []  # Tên các cửa hàng
+        data = []  # Dữ liệu để vẽ biểu đồ box plot
+        outliers = []  # Dữ liệu outliers
+        mean_values = []  # Giá trị trung bình
 
         for index, shop in enumerate(shop_data):
             categories.append(shop["shop_title"])
             discounts = shop["discounts"]
 
             if len(discounts) > 0:
+                # Tính toán các giá trị cần thiết cho box plot
                 min_discount = min(discounts)
                 max_discount = max(discounts)
                 lower_quartile = self._calculate_percentile(discounts, 25)
@@ -134,11 +187,9 @@ class MaximumMinimumDiscountBoxPlot:
                 )
                 mean_values.append([index, mean_value])
 
-                # Identify outliers
+                # Xác định các giá trị outliers
                 for value in discounts:
-                    if value < lower_quartile - 1.5 * (
-                        upper_quartile - lower_quartile
-                    ) or value > upper_quartile + 1.5 * (
+                    if value < lower_quartile - 1.5 * (upper_quartile - lower_quartile) or value > upper_quartile + 1.5 * (
                         upper_quartile - lower_quartile
                     ):
                         outliers.append([index, value])
@@ -146,22 +197,23 @@ class MaximumMinimumDiscountBoxPlot:
                 # Nếu không có dữ liệu giảm giá, thêm giá trị mặc định
                 data.append([0, 0, 0, 0, 0])
 
+        # Cấu hình biểu đồ Box Plot
         chart_config = {
             "chart": {"type": "boxplot", "style": {"fontFamily": "MyCustomFont"}},
             "title": {"text": title, "style": {"fontFamily": "MyCustomFont"}},
-            "xAxis": {"categories": categories, "title": {"text": "Shops"}},
-            "yAxis": {"title": {"text": "Discount (%)"}},
+            "xAxis": {"categories": categories, "title": {"text": "Cửa hàng"}},
+            "yAxis": {"title": {"text": "Phần trăm giảm giá (%)"}},
             "tooltip": {
                 "shared": True,
                 "useHTML": True,
-                "headerFormat": "<em>Shop: {point.key}</em><br/>",
+                "headerFormat": "<em>Cửa hàng: {point.key}</em><br/>",
             },
             "series": [
                 {
-                    "name": "Discount Distribution",
+                    "name": "Phân bố giảm giá",
                     "data": data,
                     "tooltip": {
-                        "headerFormat": "<em>Discount Distribution for {point.key}</em><br/>"
+                        "headerFormat": "<em>Phân bố giảm giá của {point.key}</em><br/>"
                     },
                 },
                 {
@@ -173,10 +225,10 @@ class MaximumMinimumDiscountBoxPlot:
                         "lineWidth": 1,
                         "lineColor": "rgba(223, 83, 83, 1)",
                     },
-                    "tooltip": {"pointFormat": "Outlier: {point.y}%<br/>"},
+                    "tooltip": {"pointFormat": "Giá trị ngoại lệ: {point.y}%<br/>"},
                 },
                 {
-                    "name": "Theoretical Mean",
+                    "name": "Trung bình lý thuyết",
                     "type": "scatter",
                     "data": mean_values,
                     "marker": {
@@ -185,7 +237,7 @@ class MaximumMinimumDiscountBoxPlot:
                         "lineColor": "rgba(0, 100, 0, 1)",
                         "radius": 5,
                     },
-                    "tooltip": {"pointFormat": "Theoretical Mean: {point.y:.2f}%<br/>"},
+                    "tooltip": {"pointFormat": "Trung bình lý thuyết: {point.y:.2f}%<br/>"},
                 },
             ],
         }
@@ -193,24 +245,40 @@ class MaximumMinimumDiscountBoxPlot:
         return chart_config
 
     @staticmethod
-    def _calculate_percentile(data, percentile):
+    def _calculate_percentile(data, percentile: float) -> float:
+        """
+        Tính toán giá trị phần trăm.
+
+        Parameters:
+        - data (List[float]): Dữ liệu đầu vào.
+        - percentile (float): Giá trị phần trăm cần tính (ví dụ: 25, 50, 75).
+
+        Returns:
+        - float: Giá trị phần trăm tương ứng.
+        """
         size = len(data)
         sorted_data = sorted(data)
         index = int(round(percentile / 100.0 * (size - 1)))
         return sorted_data[index]
 
     def generate_html(self, output_file="boxplot_chart.html"):
-        # Generate original data chart
+        """
+        Tạo file HTML để hiển thị biểu đồ Box Plot.
+
+        Parameters:
+        - output_file (str): Tên của file HTML đầu ra, mặc định là 'boxplot_chart.html'.
+        """
+        # Tạo cấu hình cho biểu đồ dữ liệu lịch sử
         original_chart_config = self.generate_chart_config(
-            "Phân Tích Giảm Giá Tối Đa và Tối Thiểu Cho Mỗi Cửa Hàng (Lịch Sử)",
+            "Phân tích giảm giá tối đa và tối thiểu của các cửa hàng (Lịch sử)",
             self.shops_data,
         )
         original_chart_json = json.dumps(original_chart_config)
 
-        # Generate predicted data chart
+        # Tạo cấu hình cho biểu đồ dự đoán dữ liệu cho 12 tháng tiếp theo
         predicted_shops_data = self.predict_next_twelve_months()
         predicted_chart_config = self.generate_chart_config(
-            "Dự Đoán Phân Tích Giảm Giá Tối Đa và Tối Thiểu Cho Mỗi Cửa Hàng (12 Tháng Tới)",
+            "Dự đoán giảm giá tối đa và tối thiểu của các cửa hàng (12 tháng tới)",
             predicted_shops_data,
         )
         predicted_chart_json = json.dumps(predicted_chart_config)
@@ -314,7 +382,7 @@ def main():
     # Các thông tin cần thiết
     api_key = "07b0e806aacf15f38b230a850b424b2542dd71af"
     game_id = "018d937f-590c-728b-ac35-38bcff85f086"
-    shops_file = "shops.json"
+    shops_file = "DiscountFrequencyAnalysis/shops.json"
 
     # Khởi tạo GameDealFetcher để lấy dữ liệu từ API
     fetcher = GameDealFetcher(api_key, game_id, shops_file)
