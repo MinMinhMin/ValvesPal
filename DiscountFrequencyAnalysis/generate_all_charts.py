@@ -13,9 +13,12 @@ from DiscountFrequencyAnalysis.PriceEvolutionStepLineChart import (
 from DiscountFrequencyAnalysis.DiscountFrequencyAnalysis import (
     DiscountFrequencyHeatmap,
 )  # File Python thứ tư chứa class này
-from DiscountFrequencyAnalysis.TotalSaving import TotalSavingsColumnChart  # File Python thứ năm chứa class này
-from DiscountFrequencyAnalysis.DiscountSaving import DiscountSavingsPieChart  # File Python thứ sáu chứa class này
-
+from DiscountFrequencyAnalysis.TotalSaving import (
+    TotalSavingsColumnChart,
+)  # File Python thứ năm chứa class này
+from DiscountFrequencyAnalysis.DiscountSaving import (
+    DiscountSavingsPieChart,
+)  # File Python thứ sáu chứa class này
 
 def generate_multiple_html_files(
     api_key: str, game_ids: List[str], shops_file: str, output_filenames: List[str]
@@ -112,5 +115,5 @@ def visualize_PriceChart(id):
     return False
 
 
-#visualize_PriceChart("018d937f-2d14-72be-959a-b3312190ce75")
+visualize_PriceChart("018d937e-fcfb-7291-bf00-f651841d24d4")
 

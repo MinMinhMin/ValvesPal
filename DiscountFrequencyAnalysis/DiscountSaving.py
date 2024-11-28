@@ -1,10 +1,10 @@
 import json
 import requests
 import datetime
-from typing import Dict, List, Union
+from typing import Dict, List, Union,Tuple
 from collections import defaultdict
 import numpy as np
-from sklearn.linear_model import LinearRegression
+from statsmodels.tsa.arima.model import ARIMA
 
 # Class GameDealFetcher để lấy dữ liệu từ API
 class GameDealFetcher:
@@ -107,57 +107,71 @@ class DiscountSavingsPieChart:
         """
         self.shops_data = shops_data
 
-    def process_raw_data(self) -> Dict[str, float]:
+    def process_raw_data(self) -> Tuple[Dict[str, float], Dict[str, List[float]]]:
         """
-        Tính toán tổng số tiền tiết kiệm từ các đợt giảm giá cho mỗi cửa hàng.
+        Tính toán tổng số tiền tiết kiệm và tiết kiệm hàng tháng từ các đợt giảm giá cho mỗi cửa hàng.
 
         Returns:
-        - Dict[str, float]: Tổng số tiền tiết kiệm theo từng cửa hàng.
+        - total_savings (Dict[str, float]): Tổng số tiền tiết kiệm theo từng cửa hàng.
+        - monthly_savings (Dict[str, List[float]]): Danh sách tiết kiệm theo từng tháng cho từng cửa hàng.
         """
         total_savings = defaultdict(float)
+        savings_per_month = defaultdict(list)
 
-        # Tính tổng số tiền tiết kiệm cho từng deal và cộng dồn theo từng cửa hàng
+        # Tính số tiền tiết kiệm cho từng deal theo từng tháng
         for shop in self.shops_data:
             shop_title = shop["shop_title"]
 
+            # Tạo một defaultdict với giá trị mặc định là float để lưu tiết kiệm theo tháng
+            monthly_savings = defaultdict(float)
+
             for deal in shop["deals"]:
+                timestamp = datetime.datetime.fromisoformat(deal["timestamp"].replace("Z", "+00:00"))
+                month_key = timestamp.strftime("%Y-%m")  # Lấy tháng và năm (YYYY-MM)
+
                 regular_price = deal["regular_price"]
                 discounted_price = deal["price"]
                 savings = regular_price - discounted_price
 
                 if savings > 0:
-                    total_savings[shop_title] += savings
+                    monthly_savings[month_key] += savings
 
-        return total_savings
+            # Tổng tiết kiệm cho cửa hàng này
+            total_savings[shop_title] += sum(monthly_savings.values())
 
-    def predict_next_twelve_months(
-        self, processed_data: Dict[str, float]
-    ) -> Dict[str, float]:
-        """
-        Dự đoán tổng số tiền tiết kiệm trong 12 tháng tiếp theo cho mỗi cửa hàng.
+            # Chuyển giá trị tiết kiệm hàng tháng thành danh sách để có thể sử dụng cho dự đoán
+            sorted_savings = [monthly_savings[month] for month in sorted(monthly_savings.keys())]
+            savings_per_month[shop_title] = sorted_savings
 
-        Parameters:
-        - processed_data (Dict[str, float]): Dữ liệu đã xử lý, chứa tổng số tiền tiết kiệm theo từng cửa hàng.
+        return total_savings, savings_per_month
 
-        Returns:
-        - Dict[str, float]: Dự đoán tổng số tiền tiết kiệm trong năm tới cho mỗi cửa hàng.
-        """
+    def predict_next_four_months(self, monthly_savings: Dict[str, List[float]]) -> Dict[str, float]:
         predicted_savings = {}
 
-        # Sử dụng hồi quy tuyến tính để dự đoán tiết kiệm tương lai cho từng cửa hàng
-        for shop_title, total_savings in processed_data.items():
-            if total_savings > 0:
-                # Chuẩn bị dữ liệu cho mô hình hồi quy tuyến tính
-                x = np.arange(12).reshape(-1, 1)  # Giả định có 12 tháng dữ liệu lịch sử
-                y = np.full((12,), total_savings / 12)  # Tiết kiệm đều trong mỗi tháng
+        for shop_title, savings in monthly_savings.items():
+            # Kiểm tra số lượng dữ liệu, ít nhất cần có 2 tháng dữ liệu để có thể dự đoán một cách hợp lý
+            if len(savings) >= 2:
+                y = savings  # Sử dụng dữ liệu tiết kiệm lịch sử thực tế
 
-                model = LinearRegression().fit(x, y)
-                future_x = np.arange(12, 24).reshape(-1, 1)  # Dự đoán cho 12 tháng tiếp theo
-                predicted_values = model.predict(future_x)
-
-                # Tổng các giá trị dự đoán để có tổng tiết kiệm trong năm tới
-                predicted_savings[shop_title] = round(max(0, float(np.sum(predicted_values))), 2)
+                # Tạo một ARIMA model để dự đoán 4 tháng tiếp theo
+                try:
+                    model = ARIMA(y, order=(1, 1, 1))  # (p, d, q) có thể thay đổi tùy thuộc vào mức độ phù hợp với dữ liệu
+                    model_fit = model.fit()  # Huấn luyện mô hình
+                    
+                    # Kiểm tra dự báo có hợp lệ hay không
+                    if len(y) > 0:
+                        predicted_values = model_fit.forecast(steps=4)  # Dự đoán cho 4 tháng tiếp theo
+                        # Tổng các giá trị dự đoán để có tổng tiết kiệm trong 4 tháng tiếp theo
+                        predicted_savings[shop_title] = round(max(0, float(np.sum(predicted_values))), 2)
+                    else:
+                        predicted_savings[shop_title] = 0
+                except Exception as e:
+                    # Thông báo lỗi nếu mô hình không thể dự đoán được
+                    print(f"Không thể dự đoán cho cửa hàng {shop_title} do lỗi: {e}")
+                    predicted_savings[shop_title] = 0
             else:
+                # Nếu có ít hơn 2 tháng dữ liệu, đặt giá trị dự đoán là 0
+                print(f"Không đủ dữ liệu để dự đoán cho cửa hàng {shop_title}")
                 predicted_savings[shop_title] = 0
 
         return predicted_savings
@@ -178,30 +192,48 @@ class DiscountSavingsPieChart:
 
         # Tạo cấu hình cho biểu đồ Pie Chart
         chart_config = {
-            "chart": {"type": "pie", "style": {"fontFamily": "MyCustomFont"}},
-            "title": {"text": title, "style": {"fontFamily": "MyCustomFont"}},
-            "tooltip": {
-                "pointFormat": "<b>{point.percentage:.1f}%</b> của tổng số tiền tiết kiệm"
+        "chart": {
+            "type": "pie", 
+            "style": {"fontFamily": "MyCustomFont"}  # Sử dụng font tùy chỉnh cho toàn bộ biểu đồ
+        },
+        "title": {
+            "text": title, 
+            "style": {"fontFamily": "MyCustomFont"}  # Sử dụng font tùy chỉnh cho tiêu đề
+        },
+        "tooltip": {
+            "pointFormat": "<b>{point.percentage:.1f}%</b> của tổng số tiền tiết kiệm"
+        },
+        "plotOptions": {
+            "pie": {
+                "allowPointSelect": True,
+                "cursor": "pointer",
+                "dataLabels": {
+                    "enabled": True,
+                    "format": "<b>{point.name}</b>: {point.percentage:.1f} %",
+                },
+                "showInLegend": True,  # Hiển thị dữ liệu trong legend
+            }
+        },
+        "legend": {
+            "align": "center",  # Căn giữa legend
+            "verticalAlign": "bottom",  # Đặt legend dưới biểu đồ
+            "layout": "horizontal",  # Sắp xếp các mục trong legend theo chiều ngang
+            "itemDistance": 50,  # Khoảng cách giữa các mục trong legend
+            "padding": 20,  # Khoảng cách giữa legend và biểu đồ
+            "itemStyle": {
+                "fontSize": "14px",  # Kích thước chữ trong legend
+                "fontWeight": "bold",  # Để chữ đậm
+                "color": "black"  # Màu chữ trong legend
             },
-            "plotOptions": {
-                "pie": {
-                    "allowPointSelect": True,
-                    "cursor": "pointer",
-                    "dataLabels": {
-                        "enabled": True,
-                        "format": "<b>{point.name}</b>: {point.percentage:.1f} %",
-                    },
-                    "showInLegend": True,
-                }
-            },
-            "series": [
-                {
-                    "name": "Tổng số tiền tiết kiệm",
-                    "colorByPoint": True,
-                    "data": series_data,
-                }
-            ],
-        }
+        },
+        "series": [
+            {
+                "name": "Tổng số tiền tiết kiệm",
+                "colorByPoint": True,
+                "data": series_data,
+            }
+        ],
+    }
 
         return chart_config
 
@@ -212,22 +244,22 @@ class DiscountSavingsPieChart:
         Parameters:
         - output_file (str): Tên của file HTML đầu ra, mặc định là 'discount_savings_pie_chart.html'.
         """
-        # Xử lý dữ liệu lịch sử để có tổng số tiền tiết kiệm theo cửa hàng
-        historical_data = self.process_raw_data()
+        # Tách riêng dữ liệu tổng tiết kiệm và dữ liệu tiết kiệm hàng tháng
+        total_savings, monthly_savings = self.process_raw_data()  # Tách thành 2 biến riêng biệt
 
-        # Tạo cấu hình cho biểu đồ dựa trên dữ liệu lịch sử
+        # Tạo cấu hình cho biểu đồ dựa trên tổng số tiền tiết kiệm
         historical_chart_config = self.generate_chart_config(
             "Tổng số tiền tiết kiệm từ giảm giá theo cửa hàng (Lịch sử)",
-            historical_data,
+            total_savings,  # Chỉ truyền vào total_savings
         )
         historical_chart_json = json.dumps(historical_chart_config)
 
-        # Dự đoán dữ liệu tiết kiệm cho 12 tháng tiếp theo
-        predicted_data = self.predict_next_twelve_months(historical_data)
+        # Dự đoán dữ liệu tiết kiệm cho 4 tháng tiếp theo
+        predicted_data = self.predict_next_four_months(monthly_savings)  # Sử dụng monthly_savings
 
         # Tạo cấu hình cho biểu đồ dựa trên dữ liệu dự đoán
         predicted_chart_config = self.generate_chart_config(
-            "Dự đoán tổng số tiền tiết kiệm từ giảm giá theo cửa hàng (12 tháng tiếp theo)",
+            "Dự đoán tổng số tiền tiết kiệm từ giảm giá theo cửa hàng (4 tháng tiếp theo)",
             predicted_data,
         )
         predicted_chart_json = json.dumps(predicted_chart_config)
@@ -240,7 +272,7 @@ class DiscountSavingsPieChart:
             <title>Biểu đồ tròn - Thị phần tiết kiệm chiết khấu</title>
             <script src="https://code.highcharts.com/highcharts.js"></script>
             <script src="https://code.highcharts.com/modules/exporting.js"></script>
-        <style>
+         <style>
             @font-face {{
                     font-family: 'MyCustomFont';
                     src: url('../FVF_Fernando_08.ttf') format('truetype');
@@ -321,10 +353,12 @@ class DiscountSavingsPieChart:
         </html>
         """
 
+        # Ghi file HTML ra output
         with open(output_file, "w", encoding="utf-8") as file:
             file.write(html_template)
 
         print(f"Biểu đồ đã được lưu vào {output_file}")
+
 
 
 # Sử dụng GameDealFetcher và DiscountSavingsPieChart để tạo biểu đồ Pie Chart

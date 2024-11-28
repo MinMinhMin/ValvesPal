@@ -99,7 +99,8 @@ class DiscountFrequencyHeatmap:
                 )
                 discount = deal["cut"]
                 # Tăng giá trị tần suất cho mức giảm giá nhất định của tháng đó
-                discount_frequency[(shop_title, date)][discount] += 1
+                if deal["cut"] > 0:
+                    discount_frequency[(shop_title, date)][discount] += 1
 
         heatmap_data = []
         # Lấy danh sách cửa hàng và danh sách tháng
@@ -411,7 +412,7 @@ class DiscountFrequencyHeatmap:
 def main():
     # Các thông tin cần thiết
     api_key = "07b0e806aacf15f38b230a850b424b2542dd71af"
-    game_id = "018d937f-590c-728b-ac35-38bcff85f086"
+    game_id = "018d937e-fcfb-7291-bf00-f651841d24d4"
     shops_file = "DiscountFrequencyAnalysis/shops.json"
 
     # Khởi tạo GameDealFetcher để lấy dữ liệu từ API

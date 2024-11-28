@@ -3,8 +3,8 @@ import requests
 import datetime
 from typing import Dict, List, Union
 import pandas as pd
-from statsmodels.tsa.holtwinters import ExponentialSmoothing
 import numpy as np
+from statsmodels.tsa.statespace.sarimax import SARIMAX
 
 
 class GameDealFetcher:
@@ -153,6 +153,20 @@ class PriceEvolutionLineChart:
         # Lấy ngày hiện tại
         today = pd.Timestamp.now(tz="UTC").normalize()
 
+        # Tìm ngày bắt đầu và kết thúc chung cho tất cả các chuỗi dữ liệu
+        all_timestamps = []
+        for shop in self.data:
+            deals = shop["deals"]
+            df = pd.DataFrame(deals)
+            df["timestamp"] = pd.to_datetime(df["timestamp"], utc=True)
+            all_timestamps.extend(df["timestamp"].tolist())
+
+        # Xác định khoảng thời gian bao phủ chung cho tất cả các cửa hàng
+        min_date = min(all_timestamps)
+        max_date = today
+
+        full_date_range = pd.date_range(start=min_date, end=max_date, freq="D", tz="UTC")
+
         for i, shop in enumerate(self.data):
             shop_title = shop["shop_title"]
             deals = shop["deals"]
@@ -165,11 +179,6 @@ class PriceEvolutionLineChart:
 
             # Xóa các nhãn bị trùng lặp bằng cách giữ lại giá trị cuối cùng trong ngày
             df = df[~df.index.duplicated(keep="last")]
-
-            # Tạo một dải thời gian từ ngày đầu tiên đến hôm nay với tần suất hàng ngày
-            full_date_range = pd.date_range(
-                start=df.index.min(), end=today, freq="D", tz="UTC"
-            )
 
             # Reindex lại dataframe để bao gồm tất cả các ngày, điền giá trị thiếu bằng phương pháp forward fill
             df = df.reindex(full_date_range, method="ffill")
@@ -237,20 +246,34 @@ class PriceEvolutionLineChart:
 
     def forecast_prices(self, df, periods=120):
         """
-        Hàm dự đoán giá trong tương lai sử dụng mô hình Holt-Winters.
+        Hàm dự đoán giá trong tương lai sử dụng mô hình SARIMAX.
 
         Parameters:
         - df (DataFrame): Dữ liệu giá thực tế đã được xử lý.
-        - periods (int): Số ngày cần dự đoán (mặc định là 120 ngày).
+        - periods (int): Số ngày cần dự đoán.
 
         Returns:
         - forecast_series (Series): Chuỗi dự đoán giá trong tương lai.
         """
-        model = ExponentialSmoothing(
-            df["price"], trend="add", seasonal="add", seasonal_periods=30
-        )
-        model_fit = model.fit()
-        forecast_series = model_fit.forecast(periods)
+        # Thiết lập các tham số của SARIMAX (p, d, q) và (P, D, Q, s)
+        p, d, q = 1, 1, 1  # Các tham số của phần ARIMA
+
+        # Khởi tạo và huấn luyện mô hình SARIMAX
+        model = SARIMAX(df["price"],
+                        order=(p, d, q),
+                        seasonal_order= None,
+                        enforce_stationarity=False,
+                        enforce_invertibility=False)
+
+        model_fit = model.fit(disp=False)
+
+        # Dự đoán cho 'periods' ngày tiếp theo
+        forecast = model_fit.forecast(steps=periods)
+
+        # Tạo một pandas Series để trả về dự đoán
+        future_dates = pd.date_range(start=df.index[-1] + pd.Timedelta(days=1), periods=periods, freq='D')
+        forecast_series = pd.Series(forecast, index=future_dates)
+
         return forecast_series
 
     def generate_highcharts_html(

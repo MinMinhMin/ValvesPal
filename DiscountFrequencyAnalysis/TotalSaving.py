@@ -1,10 +1,10 @@
 import json
 import requests
 import datetime
-from typing import Dict, List, Union
+from typing import Dict, List, Union,Tuple
 from collections import defaultdict
 import numpy as np
-from statsmodels.tsa.holtwinters import ExponentialSmoothing
+from statsmodels.tsa.arima.model import ARIMA 
 
 
 # Class GameDealFetcher để lấy dữ liệu từ API
@@ -114,65 +114,88 @@ class TotalSavingsColumnChart:
         """
         self.shops_data = shops_data
 
-    def process_raw_data(self) -> Dict[str, float]:
+    def process_raw_data(self) -> Tuple[Dict[str, float], Dict[str, List[float]]]:
         """
-        Tính tổng số tiền tiết kiệm được cho mỗi cửa hàng từ dữ liệu giảm giá.
-        
-        Parameters:
-        - Không có tham số đầu vào.
-        
+        Tính toán tổng số tiền tiết kiệm và tiết kiệm hàng tháng từ các đợt giảm giá cho mỗi cửa hàng.
+
         Returns:
-        - Một dictionary với tên cửa hàng là key và tổng số tiền tiết kiệm (USD) là value.
+        - total_savings (Dict[str, float]): Tổng số tiền tiết kiệm theo từng cửa hàng.
+        - savings_per_month (Dict[str, List[float]]): Danh sách tiết kiệm theo từng tháng cho từng cửa hàng.
         """
         total_savings = defaultdict(float)
+        savings_per_month = defaultdict(lambda: defaultdict(float))
 
-        # Tính toán tiết kiệm cho mỗi giao dịch và cộng dồn theo cửa hàng
+        # Tính tổng số tiền tiết kiệm cho từng giao dịch theo từng tháng
         for shop in self.shops_data:
             shop_title = shop["shop_title"]
 
             for deal in shop["deals"]:
+                timestamp = datetime.datetime.fromisoformat(deal["timestamp"].replace("Z", "+00:00"))
+                month_key = timestamp.strftime("%Y-%m")  # YYYY-MM format for each month
+
                 regular_price = deal["regular_price"]
                 discounted_price = deal["price"]
                 savings = regular_price - discounted_price
 
                 if savings > 0:
-                    total_savings[shop_title] += savings
+                    savings_per_month[shop_title][month_key] += savings
 
-        total_savings = {k: round(v, 2) for k, v in total_savings.items()}
-        return total_savings
+        # Tổng tiết kiệm cho từng cửa hàng
+        for shop_title, monthly_data in savings_per_month.items():
+            total_savings[shop_title] = round(sum(monthly_data.values()), 2)
 
-    def predict_next_twelve_months(
-        self, historical_data: Dict[str, float]
+        # Chuyển tiết kiệm hàng tháng thành danh sách giá trị theo thứ tự thời gian
+        savings_per_month_list = {
+            shop_title: [monthly_data[month] for month in sorted(monthly_data.keys())]
+            for shop_title, monthly_data in savings_per_month.items()
+        }
+
+        return total_savings, savings_per_month_list
+
+
+    def predict_next_four_months(
+        self, total_savings: Dict[str, float], monthly_savings: Dict[str, List[float]]
     ) -> Dict[str, float]:
         """
-        Dự đoán tổng số tiền tiết kiệm của mỗi cửa hàng trong 12 tháng tiếp theo bằng phương pháp Exponential Smoothing.
-        
+        Dự đoán tổng số tiền tiết kiệm trong 4 tháng tiếp theo và cộng với tổng tiết kiệm hiện tại.
+
         Parameters:
-        - historical_data: Dữ liệu lịch sử về tiết kiệm của các cửa hàng.
-        
+        - total_savings: Tổng tiết kiệm hiện tại của từng cửa hàng.
+        - monthly_savings: Tiết kiệm hàng tháng của từng cửa hàng.
+
         Returns:
-        - Một dictionary chứa dữ liệu dự đoán tổng tiết kiệm của các cửa hàng trong 12 tháng tới.
+        - Dự đoán tổng số tiền tiết kiệm trong 4 tháng tiếp theo cho từng cửa hàng.
         """
         predicted_savings = {}
 
         # Dự đoán tiết kiệm trong tương lai cho mỗi cửa hàng
-        for shop_title, total_savings in historical_data.items():
-            if total_savings > 0:
-                # Giả sử có dữ liệu lịch sử 12 tháng
-                historical_values = [total_savings / 12] * 12
+        for shop_title, savings in monthly_savings.items():
+            # Chỉ tiến hành dự đoán khi có đủ dữ liệu (tối thiểu 2 tháng)
+            if len(savings) >= 2:
+                try:
+                    # Sử dụng ARIMA để dự đoán 4 tháng tiếp theo
+                    model = ARIMA(savings, order=(1, 1, 1))
+                    model_fit = model.fit()
 
-                # Sử dụng Exponential Smoothing để dự đoán
-                model = ExponentialSmoothing(
-                    historical_values, trend="add", seasonal=None
-                ).fit()
-                forecast = model.forecast(12)
+                    # Dự đoán cho 4 tháng tiếp theo
+                    forecast = model_fit.forecast(steps=4)
 
-                # Tính tổng số tiền tiết kiệm dự đoán cho cả năm
-                predicted_savings[shop_title] = round(max(0, float(np.sum(forecast))),2)
+                    # Tổng tiền tiết kiệm trong 4 tháng tiếp theo
+                    forecast_total = max(0, float(np.sum(forecast)))
+
+                    # Tổng tiết kiệm = Tiết kiệm hiện tại + Dự đoán tiết kiệm 4 tháng tiếp theo
+                    predicted_savings[shop_title] = round(total_savings[shop_title] + forecast_total, 2)
+                except Exception as e:
+                    # Nếu không thể dự đoán, đặt giá trị dự đoán là tổng tiết kiệm hiện tại
+                    print(f"Không thể dự đoán cho cửa hàng {shop_title} do lỗi: {e}")
+                    predicted_savings[shop_title] = total_savings[shop_title]
             else:
-                predicted_savings[shop_title] = 0
+                # Nếu không đủ dữ liệu, giữ nguyên tổng tiết kiệm hiện tại
+                print(f"Không đủ dữ liệu để dự đoán cho cửa hàng {shop_title}")
+                predicted_savings[shop_title] = total_savings[shop_title]
 
         return predicted_savings
+
 
     def generate_chart_config(self, title: str, data: Dict[str, float]):
         """
@@ -200,39 +223,38 @@ class TotalSavingsColumnChart:
 
     def generate_html(self, output_file="total_savings_chart.html"):
         """
-        Hàm này tạo file HTML chứa hai biểu đồ: một biểu đồ lịch sử và một biểu đồ dự đoán.
-        
-        Parameters:
-        - output_file: Tên file HTML xuất ra (mặc định là "total_savings_chart.html").
-        
-        Returns:
-        - Không có giá trị trả về. Hàm sẽ tạo và lưu file HTML.
-        """
-        # Xử lý dữ liệu lịch sử để có tổng tiết kiệm của mỗi cửa hàng
-        historical_data = self.process_raw_data()
+        Tạo file HTML để hiển thị biểu đồ cột cho tổng tiết kiệm hiện tại và dự đoán tổng tiết kiệm trong 4 tháng tiếp theo.
 
-        # Tạo cấu hình biểu đồ cho dữ liệu lịch sử
+        Parameters:
+        - output_file (str): Tên của file HTML đầu ra.
+        """
+        # Xử lý dữ liệu để có tổng tiết kiệm và tiết kiệm hàng tháng
+        total_savings, monthly_savings = self.process_raw_data()
+
+        # Tạo cấu hình cho biểu đồ tổng tiết kiệm hiện tại
         historical_chart_config = self.generate_chart_config(
-            "Tổng tiết kiệm từ giảm giá cho mỗi cửa hàng (Lịch sử)", historical_data
+            "Tổng tiết kiệm từ giảm giá cho mỗi cửa hàng (Lịch sử)", total_savings
         )
         historical_chart_json = json.dumps(historical_chart_config)
 
-        # Dự đoán dữ liệu cho 12 tháng tới và tạo biểu đồ cho dữ liệu dự đoán
-        predicted_data = self.predict_next_twelve_months(historical_data)
+        # Dự đoán tổng tiết kiệm trong 4 tháng tiếp theo
+        predicted_data = self.predict_next_four_months(total_savings, monthly_savings)
+
+        # Tạo cấu hình cho biểu đồ dự đoán
         predicted_chart_config = self.generate_chart_config(
-            "Dự đoán tổng tiết kiệm từ giảm giá cho mỗi cửa hàng (12 tháng tới)",
+            "Dự đoán tổng tiết kiệm từ giảm giá cho mỗi cửa hàng (4 tháng tiếp theo)",
             predicted_data,
         )
         predicted_chart_json = json.dumps(predicted_chart_config)
 
-        # HTML Template 
+        # HTML Template
         html_template = f"""
         <!DOCTYPE html>
         <html>
         <head>
             <title>Biểu đồ cột - Tổng tiết kiệm với dự đoán</title>
             <script src="https://code.highcharts.com/highcharts.js"></script>
-        <style>
+         <style>
             @font-face {{
                     font-family: 'MyCustomFont';
                     src: url('../FVF_Fernando_08.ttf') format('truetype');
@@ -317,6 +339,7 @@ class TotalSavingsColumnChart:
             file.write(html_template)
 
         print(f"Biểu đồ đã được lưu vào {output_file}")
+
 
 
 # Sử dụng GameDealFetcher và TotalSavingsColumnChart để tạo biểu đồ Column Chart
