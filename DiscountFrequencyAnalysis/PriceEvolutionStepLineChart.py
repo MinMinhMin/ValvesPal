@@ -171,7 +171,7 @@ class PriceEvolutionLineChart:
             shop_title = shop["shop_title"]
             deals = shop["deals"]
 
-            # Convert deals to DataFrame for better handling
+            # Convert sang DataFrame để handling dễ hơn
             df = pd.DataFrame(deals)
             df["timestamp"] = pd.to_datetime(df["timestamp"], utc=True)
             df.set_index("timestamp", inplace=True)
@@ -183,7 +183,7 @@ class PriceEvolutionLineChart:
             # Reindex lại dataframe để bao gồm tất cả các ngày, điền giá trị thiếu bằng phương pháp forward fill
             df = df.reindex(full_date_range, method="ffill")
 
-            # Dự đoán giá trong tương lai bằng phương pháp Holt-Winters
+            # Dự đoán giá trong tương lai bằng phương pháp HoltWinters
             df_forecast = self.forecast_prices(df, periods=120)
 
             # Phân chia dữ liệu thực tế và dự đoán cho biểu diễn khác nhau
@@ -197,7 +197,7 @@ class PriceEvolutionLineChart:
             # Đánh dấu ranh giới giữa dữ liệu thực tế và dự đoán
             boundary_timestamp = int(df.index[-1].timestamp() * 1000)
 
-            # Thêm đoạn nối bằng nét đứt giữa dữ liệu thực tế và dự đoán
+            # Thêm đoạn nối bằng nét đứt 
             connecting_line = [
                 [
                     series_data_real[-1][0],
@@ -209,7 +209,7 @@ class PriceEvolutionLineChart:
                 ],  # Điểm đầu tiên của dự đoán
             ]
 
-            # Thêm vào series với phần dữ liệu thực tế và dự đoán
+            # Thêm vào chuỗi với phần dữ liệu thực tế và dự đoán
             series.append(
                 {
                     "name": shop_title,

@@ -120,7 +120,7 @@ class PriceComparisonGroupedBarChart:
         all_dates = set()
         for shop in self.shops_data:
             for deal in shop["deals"]:
-                date = deal["timestamp"].split("T")[0][:7]  # Lấy chỉ phần năm và tháng
+                date = deal["timestamp"].split("T")[0][:7]  #  chỉ phần năm và tháng
                 all_dates.add(date)
 
         # Tạo danh sách tất cả các tháng từ tháng đầu tiên đến tháng cuối cùng
@@ -261,7 +261,7 @@ class PriceComparisonGroupedBarChart:
             "series": series,
         }
 
-        # Dữ liệu dự đoán cho 12 tháng tiếp theo
+        # Dữ liệu dự đoán cho 12 tháng tiếp 
         predicted_data = self.predict_next_twelve_months(processed_data)
         predicted_time_points = [entry["time_point"] for entry in predicted_data]
         prediction_series = []
@@ -440,23 +440,23 @@ class PriceComparisonGroupedBarChart:
         print(f"Biểu đồ đã được lưu vào {output_file}")
 
 
-# Use GameDealFetcher and PriceComparisonGroupedBarChart to generate the chart
+#test
 def main():
-    # Necessary Information
+    # Thông tin cần thiết
     api_key = "07b0e806aacf15f38b230a850b424b2542dd71af"
     game_id = "018d937f-590c-728b-ac35-38bcff85f086"
     shops_file = "DiscountFrequencyAnalysis/shops.json"
 
-    # Initialize GameDealFetcher to fetch data from API
+    
     fetcher = GameDealFetcher(api_key, game_id, shops_file)
     raw_data = fetcher.fetch_deal_history()
     formatted_data = fetcher.format_data(raw_data)
 
-    # Initialize PriceComparisonGroupedBarChart to generate chart
+    
     grouped_bar_chart = PriceComparisonGroupedBarChart(formatted_data)
     grouped_bar_chart.generate_html(
         "grouped_bar_chart.html"
-    )  # Create HTML file with Grouped Bar Chart
+    )  
 
 
 if __name__ == "__main__":

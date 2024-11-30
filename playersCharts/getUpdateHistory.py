@@ -30,10 +30,9 @@ def getHistoryUpdate(steam_id):
 
 
 def getData(html_content):
-    # Parse the HTML content with BeautifulSoup
     soup = BeautifulSoup(html_content, "html.parser")
 
-    # Find the <tbody> element by its id and extract rows
+    # tìm <tbody> bằng id  và extract hàng
     tbody = soup.find("tbody", id="js-builds")
     rows = tbody.find_all("tr") if tbody else []
 
@@ -44,6 +43,6 @@ def getData(html_content):
         if "MAJOR" in row.find_all("td")[3].text.strip()
     ]
 
-    # Convert data into a DataFrame
+    # Convert data thành DataFrame
     df = pd.DataFrame(data, columns=["DataDate", "Title"])
     return df

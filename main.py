@@ -4,7 +4,7 @@ import sys
 from PyQt6.QtGui import QPixmap,QFontDatabase,QFont,QShortcut,QKeySequence
 from PyQt6 import uic
 from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QSizePolicy, QHBoxLayout,QScrollArea
-from PyQt6.QtCore import Qt, QThread, pyqtSignal, QUrl
+from PyQt6.QtCore import Qt, QThread, pyqtSignal, QUrl,QSize
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 import requests
 from game import GetDaiLyGames
@@ -13,7 +13,15 @@ import barRaceCharts.BarChartDataConvert as BCconvert
 import playersCharts.getPlayers_GameChart as PCconvert
 import DiscountFrequencyAnalysis.generate_all_charts as DFConvert
 
+import ctypes
+myappid = 'mycompany.myproduct.subproduct.version' 
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+
 app = QApplication(sys.argv)
+app_icon = QIcon()
+app_icon.addFile('image/icon.png', QSize(256,256))
+
+app.setWindowIcon(app_icon)
 app.setStyle("fusion")
 
 font_id = QFontDatabase.addApplicationFont("FVF_Fernando_08.ttf")

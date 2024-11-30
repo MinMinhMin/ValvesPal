@@ -1,14 +1,14 @@
 (async () => {
     try {
-        // Fetch CSV data
+        // đọc CSV data
         const csvData = await fetch('steam_users_2019_output.csv').then(response => response.text());
 
-        // Fetch the map data
+        //  dọc map data
         const topology = await fetch(
             'https://code.highcharts.com/mapdata/custom/world.topo.json'
         ).then(response => response.json());
 
-        // Create the chart
+        // tạo chart
         Highcharts.mapChart('container1', {
             chart: {
             map: topology,

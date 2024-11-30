@@ -3,22 +3,22 @@ from typing import List
 from DiscountFrequencyAnalysis.MaxAndMinDiscountAnalysis import (
     GameDealFetcher,
     MaximumMinimumDiscountBoxPlot,
-)  # File Python thứ nhất chứa class này
+)  
 from DiscountFrequencyAnalysis.PriceComparisonGrouped import (
     PriceComparisonGroupedBarChart,
-)  # File Python thứ hai chứa class này
+)  
 from DiscountFrequencyAnalysis.PriceEvolutionStepLineChart import (
     PriceEvolutionLineChart,
-)  # File Python thứ ba chứa class này
+)  
 from DiscountFrequencyAnalysis.DiscountFrequencyAnalysis import (
     DiscountFrequencyHeatmap,
-)  # File Python thứ tư chứa class này
+)  
 from DiscountFrequencyAnalysis.TotalSaving import (
     TotalSavingsColumnChart,
-)  # File Python thứ năm chứa class này
+)  
 from DiscountFrequencyAnalysis.DiscountSaving import (
     DiscountSavingsPieChart,
-)  # File Python thứ sáu chứa class này
+)  
 
 def generate_multiple_html_files(
     api_key: str, game_ids: List[str], shops_file: str, output_filenames: List[str]
@@ -43,7 +43,7 @@ def generate_multiple_html_files(
 
             print(f"File HTML Box Plot đã được tạo thành công: {box_plot_output_file}")
 
-            # Tạo biểu đồ Grouped Bar Chart và lưu dưới dạng HTML
+            # Tạo biểu đồ Grouped Bar Chart  dưới dạng HTML
             grouped_bar_output_file = "DiscountFrequencyAnalysis/"+output_filenames[index] + "_grouped_bar.html"
             grouped_bar_chart = PriceComparisonGroupedBarChart(formatted_data)
             grouped_bar_chart.generate_html(grouped_bar_output_file)
@@ -52,7 +52,7 @@ def generate_multiple_html_files(
                 f"File HTML Grouped Bar Chart đã được tạo thành công: {grouped_bar_output_file}"
             )
 
-            # Tạo biểu đồ Step Line Chart và lưu dưới dạng HTML
+            # Tạo biểu đồ Step Line Chart 
             step_line_output_file = "DiscountFrequencyAnalysis/"+output_filenames[index] + "_step_line.html"
             step_line_chart = PriceEvolutionLineChart(formatted_data)
             step_line_chart.generate_highcharts_html(step_line_output_file)
@@ -61,14 +61,14 @@ def generate_multiple_html_files(
                 f"File HTML Step Line Chart đã được tạo thành công: {step_line_output_file}"
             )
 
-            # Tạo biểu đồ Heatmap và lưu dưới dạng HTML
+            # Tạo biểu đồ Heatmap
             heatmap_output_file = "DiscountFrequencyAnalysis/"+output_filenames[index] + "_heatmap.html"
             heatmap_chart = DiscountFrequencyHeatmap(formatted_data)
             heatmap_chart.generate_html(heatmap_output_file)
 
             print(f"File HTML Heatmap đã được tạo thành công: {heatmap_output_file}")
 
-            # Tạo biểu đồ Column Chart và lưu dưới dạng HTML
+            # Tạo biểu đồ Column Chart
             column_chart_output_file ="DiscountFrequencyAnalysis/"+ output_filenames[index] + "_column_chart.html"
             column_chart = TotalSavingsColumnChart(formatted_data)
             column_chart.generate_html(column_chart_output_file)
@@ -77,7 +77,7 @@ def generate_multiple_html_files(
                 f"File HTML Column Chart đã được tạo thành công: {column_chart_output_file}"
             )
 
-            # Tạo biểu đồ Pie Chart và lưu dưới dạng HTML
+            # Tạo biểu đồ Pie Chart  dưới dạng HTML
             pie_chart_output_file = "DiscountFrequencyAnalysis/"+output_filenames[index] + "_pie_chart.html"
             pie_chart = DiscountSavingsPieChart(formatted_data)
             pie_chart.generate_html(pie_chart_output_file)
@@ -98,7 +98,7 @@ def visualize_PriceChart(id):
     api_key = "07b0e806aacf15f38b230a850b424b2542dd71af"
     shops_file = "DiscountFrequencyAnalysis/shops.json"
 
-    # Danh sách game IDs (giả định rằng bạn có 6 game IDs khác nhau để sử dụng)
+    # Danh sách game IDs 
     game_ids = [
         id,
     ]

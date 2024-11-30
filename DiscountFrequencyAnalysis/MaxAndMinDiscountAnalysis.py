@@ -13,7 +13,7 @@ class GameDealFetcher:
         api_key: str,  # Khóa API để xác thực truy cập
         game_id: str,  # ID của trò chơi cần lấy thông tin giảm giá
         shops_file: str,  # Đường dẫn đến file JSON chứa danh sách các cửa hàng
-        country: str = "US",  # Quốc gia mặc định là "US"
+        country: str = "US",  # mặc định là "US"
         shops: str = "61,35,16,6,20,24,37",  # Danh sách các ID cửa hàng, ngăn cách bằng dấu phẩy
         since: str = "2023-11-06T00:00:00Z",  # Ngày bắt đầu lấy dữ liệu
     ):
@@ -141,7 +141,7 @@ class MaximumMinimumDiscountBoxPlot:
                 predicted_values = model.predict(future_x)
                 predicted_values = [
                     round(max(0, val), 2) for val in predicted_values
-                ]  # Bảo đảm không có giá trị âm
+                ]  # đảm bảo không có giá trị âm
 
                 predicted_data.append(
                     {"shop_title": shop["shop_title"], "discounts": predicted_values}
@@ -175,7 +175,7 @@ class MaximumMinimumDiscountBoxPlot:
             discounts = shop["discounts"]
 
             if len(discounts) > 0:
-                # Tính toán các giá trị cần thiết cho box plot
+                # Tính toán các giá trị cần cho box plot
                 min_discount = min(discounts)
                 max_discount = max(discounts)
                 lower_quartile = self._calculate_percentile(discounts, 25)
@@ -275,7 +275,7 @@ class MaximumMinimumDiscountBoxPlot:
         )
         original_chart_json = json.dumps(original_chart_config)
 
-        # Tạo cấu hình cho biểu đồ dự đoán dữ liệu cho 12 tháng tiếp theo
+        # Setup cấu hình cho biểu đồ dự đoán dữ liệu cho 12 tháng tiếp theo
         predicted_shops_data = self.predict_next_twelve_months()
         predicted_chart_config = self.generate_chart_config(
             "Dự đoán giảm giá tối đa và tối thiểu của các cửa hàng (12 tháng tới)",
@@ -377,7 +377,7 @@ class MaximumMinimumDiscountBoxPlot:
         print(f"Chart has been saved to {output_file}")
 
 
-# Sử dụng GameDealFetcher và MaximumMinimumDiscountBoxPlot để tạo biểu đồ
+# Sử dụng GameDealFetcher and MaximumMinimumDiscountBoxPlot để tạo biểu đồ
 def main():
     # Các thông tin cần thiết
     api_key = "07b0e806aacf15f38b230a850b424b2542dd71af"
