@@ -21,7 +21,7 @@ class GameDealFetcher:
     ):
         """
         Khởi tạo đối tượng GameDealFetcher với các tham số cấu hình để lấy dữ liệu từ API.
-        
+
         :param api_key: Khóa API để truy cập vào dịch vụ.
         :param game_id: ID của trò chơi cần lấy dữ liệu.
         :param shops_file: Đường dẫn tới tệp JSON chứa thông tin các cửa hàng.
@@ -144,7 +144,9 @@ class PriceComparisonGroupedBarChart:
                     if deal["timestamp"].split("T")[0][:7] <= date
                 ]
                 if relevant_deals:
-                    latest_deal = sorted(relevant_deals, key=lambda x: x["timestamp"])[-1]
+                    latest_deal = sorted(relevant_deals, key=lambda x: x["timestamp"])[
+                        -1
+                    ]
                     latest_prices[shop_id] = latest_deal["price"]
 
                 if shop_id in latest_prices:
@@ -185,7 +187,9 @@ class PriceComparisonGroupedBarChart:
                 x = np.arange(len(shop_prices)).reshape(-1, 1)
                 y = np.array(shop_prices)
                 model = LinearRegression().fit(x, y)
-                future_x = np.arange(len(shop_prices), len(shop_prices) + 12).reshape(-1, 1)
+                future_x = np.arange(len(shop_prices), len(shop_prices) + 12).reshape(
+                    -1, 1
+                )
                 predicted_values = model.predict(future_x)
 
                 for i, date in enumerate(next_twelve_months):
@@ -193,7 +197,9 @@ class PriceComparisonGroupedBarChart:
                         {
                             "time_point": date,
                             "shop_name": shop_name,
-                            "predicted_price": round(max(0, float(predicted_values[i])), 2),
+                            "predicted_price": round(
+                                max(0, float(predicted_values[i])), 2
+                            ),
                         }
                     )
 
@@ -263,6 +269,7 @@ class PriceComparisonGroupedBarChart:
 
         # Dữ liệu dự đoán cho 12 tháng tiếp theo
         predicted_data = self.predict_next_twelve_months(processed_data)
+        print(predicted_data)
         predicted_time_points = [entry["time_point"] for entry in predicted_data]
         prediction_series = []
 
@@ -293,7 +300,6 @@ class PriceComparisonGroupedBarChart:
             "yAxis": {
                 "title": {
                     "text": "Giá (USD)",
-                    "style": {"fontFamily": "MyCustomFont, sans-serif"},
                 }
             },
             "tooltip": {
@@ -415,16 +421,6 @@ class PriceComparisonGroupedBarChart:
                     var chartConfig1 = {original_chart_json};
                     var chartConfig2 = {prediction_chart_json};
 
-                    chartConfig1.chart.events = {{
-                        load: function () {{
-                            this.xAxis[0].update({{ events: {{ afterSetExtremes: syncExtremes }} }});
-                        }}
-                    }};
-                    chartConfig2.chart.events = {{
-                        load: function () {{
-                            this.xAxis[0].update({{ events: {{ afterSetExtremes: syncExtremes }} }});
-                        }}
-                    }};
 
                     Highcharts.chart('container1', chartConfig1);
                     Highcharts.chart('container2', chartConfig2);

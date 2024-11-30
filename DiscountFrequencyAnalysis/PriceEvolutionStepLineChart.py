@@ -1,10 +1,13 @@
 import json
+import math
 import requests
 import datetime
 from typing import Dict, List, Union
 import pandas as pd
 import numpy as np
 from statsmodels.tsa.statespace.sarimax import SARIMAX
+from datetime import datetime
+from collections import Counter
 
 
 class GameDealFetcher:
@@ -165,7 +168,9 @@ class PriceEvolutionLineChart:
         min_date = min(all_timestamps)
         max_date = today
 
-        full_date_range = pd.date_range(start=min_date, end=max_date, freq="D", tz="UTC")
+        full_date_range = pd.date_range(
+            start=min_date, end=max_date, freq="D", tz="UTC"
+        )
 
         for i, shop in enumerate(self.data):
             shop_title = shop["shop_title"]
@@ -183,7 +188,7 @@ class PriceEvolutionLineChart:
             # Reindex lại dataframe để bao gồm tất cả các ngày, điền giá trị thiếu bằng phương pháp forward fill
             df = df.reindex(full_date_range, method="ffill")
 
-            # Dự đoán giá trong tương lai bằng phương pháp Holt-Winters
+            # Dự đoán giá trong tương lai (120 ngày tiếp theo) bằng chu kỳ trung bình
             df_forecast = self.forecast_prices(df, periods=120)
 
             # Phân chia dữ liệu thực tế và dự đoán cho biểu diễn khác nhau
@@ -244,48 +249,154 @@ class PriceEvolutionLineChart:
 
         return series, boundary_timestamp
 
+    def getCycle(flags):
+        n = len(flags)
+        false_lengths = []
+        i = 0
+
+        while i < n:
+            if not flags[i]:  # Start of a False subarray
+                start = i
+                while i < n and not flags[i]:
+                    i += 1
+                end = i - 1
+                # Add the length of this False subarray
+                false_lengths.append(end - start + 1)
+            else:
+                i += 1
+
+        # Calculate the average length of False subarrays
+        if false_lengths:
+            average_length = sum(false_lengths) / len(false_lengths)
+        else:
+            average_length = 0
+
+        return int(average_length)
+
+    def getPredictions(prices: np.ndarray, periods: int):
+        if len(prices) == 0:
+            return []
+        min_price = np.nanmin(prices)
+        max_price = np.nanmax(prices)
+
+        print(f"Min price: {min_price} - Max price: {max_price}")
+
+        cpoint = []
+        cycle_min = 0
+        count_cycle_min = 0
+        predicts = []
+        last_min = 0
+
+        n = len(prices)
+        flags = [False] * n  # Initialize all as False
+
+        t = 0
+        while t < n:
+            # Find the start of a group of identical elements
+            if prices[t] == np.nan:
+                continue
+            start = t
+            while t + 1 < n and prices[t] == prices[t + 1]:
+                t += 1
+            end = t
+
+            # Check valley conditions
+            if (start > 0 and prices[start] < prices[start - 1]) and (
+                end < n - 1 and prices[end] < prices[end + 1]
+            ):
+                for j in range(start, end + 1):
+                    flags[j] = True
+
+            # Move to the next group
+            t += 1
+
+        cycle = PriceEvolutionLineChart.getCycle(flags)
+
+        print(cycle)
+
+        x = 1000000000
+        y = -1
+        for i in range(0, len(prices)):
+            # print(min)
+            if flags[i] == True:
+                last_min = i
+                x = min(x, i)
+                y = max(y, i)
+            else:
+                if y != -1:
+                    cpoint.append(x)
+                    cpoint.append(y)
+                x = 1000000000
+                y = -1
+        if y != -1:
+            cpoint.append(x)
+            cpoint.append(y)
+
+        for i in range(0, len(cpoint)):
+            if i % 2 == 1:
+                count_cycle_min += 1
+                cycle_min += cpoint[i] - cpoint[i - 1]
+        if count_cycle_min != 0:
+            cycle_min = cycle_min // count_cycle_min
+        else:
+            cycle_min = cycle
+        if len(prices) - last_min < cycle:
+            for i in range(0, cycle - (len(prices) - last_min)):
+                predicts.append(prices[-1])
+        if prices[-1] != min_price:
+            for i in range(0, cycle_min):
+                predicts.append(min_price)
+
+        while len(predicts) != periods:
+            for i in range(0, cycle):
+                predicts.append(max_price)
+                if len(predicts) == periods:
+                    return predicts
+            l_p = -1
+            for i in range(0, cycle_min):
+
+                predicts.append(min_price)
+                if len(cpoint) != 0:
+                    l_p = cpoint[-1] + i + 1
+                if len(predicts) == periods:
+
+                    return predicts
+            if l_p != -1:
+                cpoint.append(l_p)
+                sum = 0
+                c = 0
+                for j in range(0, len(cpoint)):
+                    if j % 2 == 1:
+                        sum += cpoint[j] - cpoint[j - 1]
+                        c += 1
+                cycle_min = sum // c
+        return predicts
+
     def forecast_prices(self, df, periods=120):
-        """
-        Hàm dự đoán giá trong tương lai sử dụng mô hình SARIMAX.
 
-        Parameters:
-        - df (DataFrame): Dữ liệu giá thực tế đã được xử lý.
-        - periods (int): Số ngày cần dự đoán.
+        # # Create a pandas series for the forecast with the proper index (dates)
+        future_dates = pd.date_range(
+            start=df.index[-1] + pd.Timedelta(days=1), periods=periods, freq="D"
+        )
+        # print(df)
+        forecast_series = pd.Series(
+            PriceEvolutionLineChart.getPredictions(df["price"].to_numpy(), periods),
+            index=future_dates,
+        )
+        # print(forecast_series.round(2))
 
-        Returns:
-        - forecast_series (Series): Chuỗi dự đoán giá trong tương lai.
-        """
-        # Thiết lập các tham số của SARIMAX (p, d, q) và (P, D, Q, s)
-        p, d, q = 1, 1, 1  # Các tham số của phần ARIMA
-
-        # Khởi tạo và huấn luyện mô hình SARIMAX
-        model = SARIMAX(df["price"],
-                        order=(p, d, q),
-                        seasonal_order= None,
-                        enforce_stationarity=False,
-                        enforce_invertibility=False)
-
-        model_fit = model.fit(disp=False)
-
-        # Dự đoán cho 'periods' ngày tiếp theo
-        forecast = model_fit.forecast(steps=periods)
-
-        # Tạo một pandas Series để trả về dự đoán
-        future_dates = pd.date_range(start=df.index[-1] + pd.Timedelta(days=1), periods=periods, freq='D')
-        forecast_series = pd.Series(forecast, index=future_dates)
-
-        return forecast_series
+        return forecast_series.round(2)
 
     def generate_highcharts_html(
-    self,
-    output_file: str = "output/synchronized_step_line_charts_with_forecast.html",
-):
+        self,
+        output_file: str = "output/synchronized_step_line_charts_with_forecast.html",
+    ):
         """
         Hàm tạo ra mã HTML cho biểu đồ Highcharts, bao gồm cả dự báo và lịch sử giá của trò chơi.
-        
+
         Parameters:
         - output_file (str): Đường dẫn đến file đầu ra chứa mã HTML của biểu đồ. Mặc định là "output/synchronized_step_line_charts_with_forecast.html".
-        
+
         Returns:
         - Không có giá trị trả về. Hàm sẽ lưu mã HTML vào file `output_file`.
         """
@@ -293,7 +404,7 @@ class PriceEvolutionLineChart:
         series_data, boundary_timestamp = self.prepare_series_data()
 
         chart_configs = []
-        
+
         # Duyệt qua các chuỗi dữ liệu (bao gồm series thực tế, chuỗi nối và dự báo)
         for i in range(0, len(series_data), 3):
             # Cấu hình cho một biểu đồ
@@ -358,13 +469,19 @@ class PriceEvolutionLineChart:
                     "valueSuffix": " USD",  # Đơn vị hiển thị khi hover chuột
                     "shared": True,  # Chia sẻ tooltip giữa các chuỗi
                     "crosshairs": True,  # Hiển thị đường cắt ngang khi hover
-                    "dateTimeLabelFormats": {"day": "%e %b %Y"},  # Định dạng ngày tháng trong tooltip
+                    "dateTimeLabelFormats": {
+                        "day": "%e %b %Y"
+                    },  # Định dạng ngày tháng trong tooltip
                     "style": {
                         "fontFamily": "'MyCustomFont', sans-serif",  # Phông chữ của tooltip
                         "fontSize": "10px",  # Kích thước phông chữ của tooltip
                     },
                 },
-                "series": [series_data[i], series_data[i + 1], series_data[i + 2]],  # Các chuỗi thực tế, nối và dự báo
+                "series": [
+                    series_data[i],
+                    series_data[i + 1],
+                    series_data[i + 2],
+                ],  # Các chuỗi thực tế, nối và dự báo
                 "plotOptions": {
                     "series": {
                         "step": "left",  # Cài đặt kiểu step line
@@ -383,7 +500,7 @@ class PriceEvolutionLineChart:
                     }
                 },
             }
-            
+
             # Thêm cấu hình của biểu đồ vào danh sách chart_configs
             chart_configs.append(config)
 
@@ -470,7 +587,6 @@ class PriceEvolutionLineChart:
         for i in range(len(chart_configs)):
             html_content += f'<div id="container-{i}" style="width: 100%; height: 400px; margin: 20px 0;"></div>'
 
-        
         html_content += """
         <script>
         let charts = [];
@@ -596,7 +712,7 @@ class PriceEvolutionLineChart:
 
 def main():
     api_key = "07b0e806aacf15f38b230a850b424b2542dd71af"
-    game_id = "018d937f-4008-731e-8860-4f552b359a5c"
+    game_id = "018d937e-fde4-72ff-a7af-45e4955a8dd6"
     shops_file = "DiscountFrequencyAnalysis/shops.json"
 
     fetcher = GameDealFetcher(api_key, game_id, shops_file)

@@ -6,6 +6,10 @@ import requests
 import datetime
 from typing import Dict, List, Union
 from collections import defaultdict
+from DiscountFrequencyAnalysis.PriceEvolutionStepLineChart import (
+    PriceEvolutionLineChart,
+)
+
 
 # Class GameDealFetcher để lấy dữ liệu từ API
 class GameDealFetcher:
@@ -79,6 +83,7 @@ class GameDealFetcher:
             shop_entry["deals"].append(deal_info)
 
         return formatted_data
+
 
 # Class DiscountFrequencyHeatmap để tạo biểu đồ Heatmap
 class DiscountFrequencyHeatmap:
@@ -383,16 +388,7 @@ class DiscountFrequencyHeatmap:
                     var chartConfig1 = {original_chart_json};
                     var chartConfig2 = {prediction_chart_json};
 
-                    chartConfig1.chart.events = {{
-                        load: function () {{
-                            this.xAxis[0].update({{ events: {{ afterSetExtremes: syncExtremes }} }});
-                        }}
-                    }};
-                    chartConfig2.chart.events = {{
-                        load: function () {{
-                            this.xAxis[0].update({{ events: {{ afterSetExtremes: syncExtremes }} }});
-                        }}
-                    }};
+
 
                     Highcharts.chart('container1', chartConfig1);
                     Highcharts.chart('container2', chartConfig2);
