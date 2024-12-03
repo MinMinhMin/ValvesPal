@@ -1,12 +1,11 @@
 import pandas as pd
 import numpy as np
-from sklearn.linear_model import LinearRegression
+from statsmodels.tsa.arima.model import ARIMA
 import json
 import requests
-import datetime
+from datetime import datetime
 from typing import Dict, List, Union
 from collections import defaultdict
-
 
 # Class GameDealFetcher để lấy dữ liệu từ API
 class GameDealFetcher:
@@ -65,11 +64,11 @@ class GameDealFetcher:
         else:
             raise Exception(f"Lỗi: {response.status_code} - {response.text}")
 
-    def format_data(self, data: Union[List, Dict]) -> List[Dict]:
+    def format_data(self, data: Union[List, Dict, str]) -> List[Dict]:
         """
         Định dạng dữ liệu từ API thành cấu trúc có tổ chức hơn để dễ xử lý.
 
-        :param data: Dữ liệu từ API trả về (dạng danh sách hoặc từ điển).
+        :param data: Dữ liệu từ API trả về (dạng danh sách, từ điển, hoặc chuỗi JSON).
         :return: Dữ liệu đã được định dạng dưới dạng danh sách các từ điển.
         """
         if isinstance(data, dict) and "data" in data:
@@ -113,44 +112,55 @@ class PriceComparisonGroupedBarChart:
 
     def process_raw_data(self) -> List[Dict]:
         """
-        Xử lý dữ liệu thô để tạo dữ liệu cho biểu đồ cột nhóm.
-
-        :return: Dữ liệu đã xử lý, dạng danh sách các từ điển chứa thông tin giá và thời gian.
+        Xử lý dữ liệu thô để tạo dữ liệu cho biểu đồ cột nhóm, tính giá trị lớn nhất, nhỏ nhất và trung bình.
         """
+        # Khởi tạo danh sách chứa tất cả các tháng có trong dữ liệu
         all_dates = set()
         for shop in self.shops_data:
             for deal in shop["deals"]:
-                date = deal["timestamp"].split("T")[0][:7]  # Lấy chỉ phần năm và tháng
+                date = deal["timestamp"].split("T")[0][:7]
                 all_dates.add(date)
 
-        # Tạo danh sách tất cả các tháng từ tháng đầu tiên đến tháng cuối cùng
         all_dates = (
             pd.date_range(start=min(all_dates), end=max(all_dates), freq="MS")
             .strftime("%Y-%m")
             .tolist()
         )
 
-        latest_prices = {}
         time_point_data = defaultdict(dict)
+        latest_prices = {}  # Lưu giá mới nhất của từng shop
 
         for date in all_dates:
             for shop in self.shops_data:
-                shop_id = shop["shop_id"]
                 shop_title = shop["shop_title"]
 
+                # Lọc những deal có ngày nhỏ hơn hoặc bằng tháng hiện tại
                 relevant_deals = [
                     deal
                     for deal in shop["deals"]
                     if deal["timestamp"].split("T")[0][:7] <= date
                 ]
-                if relevant_deals:
-                    latest_deal = sorted(relevant_deals, key=lambda x: x["timestamp"])[
-                        -1
-                    ]
-                    latest_prices[shop_id] = latest_deal["price"]
 
-                if shop_id in latest_prices:
-                    time_point_data[date][shop_title] = latest_prices[shop_id]
+                if relevant_deals:
+                    # Lấy giá trị lớn nhất và nhỏ nhất của shop trong tháng đó
+                    max_deal = max(relevant_deals, key=lambda x: x["price"])
+                    min_deal = min(relevant_deals, key=lambda x: x["price"])
+                    avg_price = (max_deal["price"] + min_deal["price"]) / 2
+                    time_point_data[date][f"{shop_title}_max"] = max_deal["price"]
+                    time_point_data[date][f"{shop_title}_min"] = min_deal["price"]
+                    time_point_data[date][f"{shop_title}_avg"] = avg_price
+                    latest_prices[shop_title] = {"max": max_deal["price"], "min": min_deal["price"], "avg": avg_price}
+                else:
+                    # Nếu không có deal, lấy giá trị mới nhất đã biết
+                    if shop_title in latest_prices:
+                        time_point_data[date][f"{shop_title}_max"] = latest_prices[shop_title]["max"]
+                        time_point_data[date][f"{shop_title}_min"] = latest_prices[shop_title]["min"]
+                        time_point_data[date][f"{shop_title}_avg"] = latest_prices[shop_title]["avg"]
+                    else:
+                        # Nếu chưa từng có deal, để giá là 0
+                        time_point_data[date][f"{shop_title}_max"] = 0
+                        time_point_data[date][f"{shop_title}_min"] = 0
+                        time_point_data[date][f"{shop_title}_avg"] = 0
 
         formatted_data = []
         for date, prices in time_point_data.items():
@@ -158,12 +168,10 @@ class PriceComparisonGroupedBarChart:
 
         return formatted_data
 
+
     def predict_next_twelve_months(self, processed_data: List[Dict]) -> List[Dict]:
         """
-        Dự đoán giá trong 12 tháng tiếp theo dựa trên dữ liệu đã xử lý.
-
-        :param processed_data: Dữ liệu đã xử lý cho biểu đồ cột nhóm.
-        :return: Dữ liệu dự đoán giá cho 12 tháng tiếp theo.
+        Dự đoán giá trong 12 tháng tiếp theo dựa trên dữ liệu đã xử lý, sử dụng mô hình ARIMA.
         """
         all_dates = pd.to_datetime([entry["time_point"] for entry in processed_data])
         next_twelve_months = [
@@ -172,78 +180,116 @@ class PriceComparisonGroupedBarChart:
         ]
 
         shop_names = sorted(
-            {shop for entry in processed_data for shop in entry["prices"].keys()}
+            {shop.split("_")[0] for entry in processed_data for shop in entry["prices"].keys()}
         )
+        
         predictions = []
 
         for shop_name in shop_names:
-            shop_prices = [
-                entry["prices"].get(shop_name, None)
-                for entry in processed_data
-                if entry["prices"].get(shop_name) is not None
+            # Lấy dữ liệu giá trị cho shop
+            shop_prices_max = [
+                entry["prices"].get(f"{shop_name}_max", None) for entry in processed_data
+            ]
+            shop_prices_min = [
+                entry["prices"].get(f"{shop_name}_min", None) for entry in processed_data
+            ]
+            shop_prices_avg = [
+                entry["prices"].get(f"{shop_name}_avg", None) for entry in processed_data
             ]
 
-            if len(shop_prices) > 1:
-                x = np.arange(len(shop_prices)).reshape(-1, 1)
-                y = np.array(shop_prices)
-                model = LinearRegression().fit(x, y)
-                future_x = np.arange(len(shop_prices), len(shop_prices) + 12).reshape(
-                    -1, 1
-                )
-                predicted_values = model.predict(future_x)
+            if len(shop_prices_max) > 1:
+                # Chuyển dữ liệu thành dạng mảng numpy để sử dụng trong ARIMA
+                max_values = np.array([x for x in shop_prices_max if x is not None])
+                min_values = np.array([x for x in shop_prices_min if x is not None])
+                avg_values = np.array([x for x in shop_prices_avg if x is not None])
 
-                for i, date in enumerate(next_twelve_months):
-                    predictions.append(
-                        {
+                # Dự đoán giá trị max, min và avg với ARIMA
+                try:
+                    model_max = ARIMA(max_values, order=(1, 1, 1))  # ARIMA(p,d,q), p, d, q có thể thử các giá trị khác
+                    model_min = ARIMA(min_values, order=(1, 1, 1))
+                    model_avg = ARIMA(avg_values, order=(1, 1, 1))
+
+                    # Huấn luyện mô hình
+                    model_max_fit = model_max.fit()
+                    model_min_fit = model_min.fit()
+                    model_avg_fit = model_avg.fit()
+
+                    # Dự đoán cho 12 tháng tới
+                    forecast_max = model_max_fit.forecast(steps=12)
+                    forecast_min = model_min_fit.forecast(steps=12)
+                    forecast_avg = model_avg_fit.forecast(steps=12)
+
+                    # Lưu kết quả dự đoán
+                    for i, date in enumerate(next_twelve_months):
+                        predictions.append({
                             "time_point": date,
                             "shop_name": shop_name,
-                            "predicted_price": round(
-                                max(0, float(predicted_values[i])), 2
-                            ),
-                        }
-                    )
+                            "predicted_max_price": round(max(0, float(forecast_max[i])), 2),
+                            "predicted_min_price": round(max(0, float(forecast_min[i])), 2),
+                            "predicted_avg_price": round(max(0, float(forecast_avg[i])), 2)
+                        })
+                except Exception as e:
+                    print(f"Error with ARIMA prediction for {shop_name}: {e}")
+                    continue
 
+        # Chuyển dữ liệu dự đoán thành cấu trúc phù hợp với biểu đồ
         formatted_predictions = defaultdict(dict)
         for prediction in predictions:
-            formatted_predictions[prediction["time_point"]][prediction["shop_name"]] = (
-                prediction["predicted_price"]
-            )
+            formatted_predictions[prediction["time_point"]][f"{prediction['shop_name']}_max"] = prediction["predicted_max_price"]
+            formatted_predictions[prediction["time_point"]][f"{prediction['shop_name']}_min"] = prediction["predicted_min_price"]
+            formatted_predictions[prediction["time_point"]][f"{prediction['shop_name']}_avg"] = prediction["predicted_avg_price"]
 
         formatted_data = [
             {"time_point": date, "prices": formatted_predictions[date]}
             for date in next_twelve_months
         ]
+        
+        # Debugging: In dữ liệu dự đoán để kiểm tra
+        print("Dữ liệu dự đoán:", formatted_data)
+
         return formatted_data
 
     def generate_chart_config(self):
         """
-        Tạo cấu hình cho hai biểu đồ cột nhóm: một cho dữ liệu gốc và một cho dữ liệu dự đoán.
-
-        :return: Cấu hình biểu đồ cho dữ liệu gốc và dự đoán.
+        Tạo cấu hình cho ba biểu đồ cột nhóm: một cho giá trị lớn nhất, một cho giá trị nhỏ nhất và một cho giá trị trung bình.
         """
         processed_data = self.process_raw_data()
 
         # Dữ liệu gốc cho Biểu đồ cột nhóm
         time_points = [entry["time_point"] for entry in processed_data]
         shop_names = sorted(
-            {shop for entry in processed_data for shop in entry["prices"].keys()}
+            {shop.split("_")[0] for entry in processed_data for shop in entry["prices"].keys()}
         )
-        series = []
+
+        # Series cho giá trị lớn nhất, nhỏ nhất và trung bình
+        max_series = []
+        min_series = []
+        avg_series = []
 
         for shop_name in shop_names:
-            shop_prices = [
-                entry["prices"].get(shop_name, None) for entry in processed_data
+            max_prices = [
+                entry["prices"].get(f"{shop_name}_max", None) for entry in processed_data
             ]
-            series.append({"name": shop_name, "data": shop_prices})
+            min_prices = [
+                entry["prices"].get(f"{shop_name}_min", None) for entry in processed_data
+            ]
+            avg_prices = [
+                entry["prices"].get(f"{shop_name}_avg", None) for entry in processed_data
+            ]
 
-        original_chart_config = {
+            max_series.append({"name": f"{shop_name}_max", "data": max_prices})
+            min_series.append({"name": f"{shop_name}_min", "data": min_prices})
+            avg_series.append({"name": f"{shop_name}_avg", "data": avg_prices})
+
+        # Biểu đồ giá trị lớn nhất
+        original_max_chart_config = {
             "chart": {
                 "type": "column",
                 "zoomType": "x",
                 "style": {"fontFamily": "MyCustomFont, sans-serif"},
             },
             "title": {
-                "text": "So sánh giá tại cùng thời điểm cho mỗi cửa hàng (Hàng tháng)",
+                "text": "So sánh giá trị lớn nhất cho mỗi cửa hàng (Hàng tháng)",
                 "style": {"fontFamily": "MyCustomFont, sans-serif"},
             },
             "xAxis": {
@@ -264,29 +310,142 @@ class PriceComparisonGroupedBarChart:
                 "useHTML": True,
                 "headerFormat": "<em>Tháng: {point.key}</em><br/>",
             },
-            "series": series,
+            "legend": {
+            "align": "center",  # Căn giữa legend
+            "verticalAlign": "bottom",  # Đặt legend dưới biểu đồ
+            "layout": "horizontal",  # Sắp xếp các mục trong legend theo chiều ngang
+            "itemDistance": 65,  # Khoảng cách giữa các mục trong legend
+            "padding": 20,  # Khoảng cách giữa legend và biểu đồ
+            "itemStyle": {
+                "fontSize": "14px",  # Kích thước chữ trong legend
+                "fontWeight": None,  # Để chữ đậm
+                "color": "black"  # Màu chữ trong legend
+            },
+        },
+            "series": max_series,
         }
 
-        # Dữ liệu dự đoán cho 12 tháng tiếp theo
-        predicted_data = self.predict_next_twelve_months(processed_data)
-        print(predicted_data)
-        predicted_time_points = [entry["time_point"] for entry in predicted_data]
-        prediction_series = []
-
-        for shop_name in shop_names:
-            predicted_prices = [
-                entry["prices"].get(shop_name, None) for entry in predicted_data
-            ]
-            prediction_series.append({"name": shop_name, "data": predicted_prices})
-
-        prediction_chart_config = {
+        # Biểu đồ giá trị nhỏ nhất
+        original_min_chart_config = {
             "chart": {
                 "type": "column",
                 "zoomType": "x",
                 "style": {"fontFamily": "MyCustomFont, sans-serif"},
             },
             "title": {
-                "text": "Dự đoán so sánh giá cho 12 tháng tiếp theo",
+                "text": "So sánh giá trị nhỏ nhất cho mỗi cửa hàng (Hàng tháng)",
+                "style": {"fontFamily": "MyCustomFont, sans-serif"},
+            },
+            "xAxis": {
+                "categories": time_points,
+                "title": {
+                    "text": "Tháng",
+                    "style": {"fontFamily": "MyCustomFont, sans-serif"},
+                },
+                "labels": {"rotation": -45},
+            },
+            "yAxis": {
+                "title": {
+                    "text": "Giá (USD)",
+                }
+            },
+            "tooltip": {
+                "shared": True,
+                "useHTML": True,
+                "headerFormat": "<em>Tháng: {point.key}</em><br/>",
+            },
+             "legend": {
+            "align": "center",  # Căn giữa legend
+            "verticalAlign": "bottom",  # Đặt legend dưới biểu đồ
+            "layout": "horizontal",  # Sắp xếp các mục trong legend theo chiều ngang
+            "itemDistance": 65,  # Khoảng cách giữa các mục trong legend
+            "padding": 20,  # Khoảng cách giữa legend và biểu đồ
+            "itemStyle": {
+                "fontSize": "14px",  # Kích thước chữ trong legend
+                "fontWeight": None,  # Để chữ đậm
+                "color": "black"  # Màu chữ trong legend
+            },
+        },
+            "series": min_series,
+        }
+
+        # Biểu đồ giá trị trung bình
+        original_avg_chart_config = {
+            "chart": {
+                "type": "column",
+                "zoomType": "x",
+                "style": {"fontFamily": "MyCustomFont, sans-serif"},
+            },
+            "title": {
+                "text": "So sánh giá trị trung bình cho mỗi cửa hàng (Hàng tháng)",
+                "style": {"fontFamily": "MyCustomFont, sans-serif"},
+            },
+            "xAxis": {
+                "categories": time_points,
+                "title": {
+                    "text": "Tháng",
+                    "style": {"fontFamily": "MyCustomFont, sans-serif"},
+                },
+                "labels": {"rotation": -45},
+            },
+            "yAxis": {
+                "title": {
+                    "text": "Giá (USD)",
+                }
+            },
+            "tooltip": {
+                "shared": True,
+                "useHTML": True,
+                "headerFormat": "<em>Tháng: {point.key}</em><br/>",
+            },
+             "legend": {
+            "align": "center",  # Căn giữa legend
+            "verticalAlign": "bottom",  # Đặt legend dưới biểu đồ
+            "layout": "horizontal",  # Sắp xếp các mục trong legend theo chiều ngang
+            "itemDistance": 65,  # Khoảng cách giữa các mục trong legend
+            "padding": 20,  # Khoảng cách giữa legend và biểu đồ
+            "itemStyle": {
+                "fontSize": "14px",  # Kích thước chữ trong legend
+                "fontWeight": None,  # Để chữ đậm
+                "color": "black"  # Màu chữ trong legend
+            },
+        },
+            "series": avg_series,
+        }
+
+        # Dự đoán cho 12 tháng tiếp theo
+        predicted_data = self.predict_next_twelve_months(processed_data)
+        predicted_time_points = [entry["time_point"] for entry in predicted_data]
+        
+        # Series cho dự đoán giá trị lớn nhất, nhỏ nhất và trung bình
+        predicted_max_series = []
+        predicted_min_series = []
+        predicted_avg_series = []
+
+        for shop_name in shop_names:
+            predicted_max_prices = [
+                entry["prices"].get(f"{shop_name}_max", None) for entry in predicted_data
+            ]
+            predicted_min_prices = [
+                entry["prices"].get(f"{shop_name}_min", None) for entry in predicted_data
+            ]
+            predicted_avg_prices = [
+                entry["prices"].get(f"{shop_name}_avg", None) for entry in predicted_data
+            ]
+
+            predicted_max_series.append({"name": f"{shop_name}_max", "data": predicted_max_prices})
+            predicted_min_series.append({"name": f"{shop_name}_min", "data": predicted_min_prices})
+            predicted_avg_series.append({"name": f"{shop_name}_avg", "data": predicted_avg_prices})
+
+        # Biểu đồ dự đoán giá trị lớn nhất
+        prediction_max_chart_config = {
+            "chart": {
+                "type": "column",
+                "zoomType": "x",
+                "style": {"fontFamily": "MyCustomFont, sans-serif"},
+            },
+            "title": {
+                "text": "Dự đoán giá trị lớn nhất cho 12 tháng tiếp theo",
                 "style": {"fontFamily": "MyCustomFont, sans-serif"},
             },
             "xAxis": {
@@ -307,20 +466,131 @@ class PriceComparisonGroupedBarChart:
                 "useHTML": True,
                 "headerFormat": "<em>Tháng: {point.key}</em><br/>",
             },
-            "series": prediction_series,
+             "legend": {
+            "align": "center",  # Căn giữa legend
+            "verticalAlign": "bottom",  # Đặt legend dưới biểu đồ
+            "layout": "horizontal",  # Sắp xếp các mục trong legend theo chiều ngang
+            "itemDistance": 65,  # Khoảng cách giữa các mục trong legend
+            "padding": 20,  # Khoảng cách giữa legend và biểu đồ
+            "itemStyle": {
+                "fontSize": "14px",  # Kích thước chữ trong legend
+                "fontWeight": None,  # Để chữ đậm
+                "color": "black"  # Màu chữ trong legend
+            },
+        },
+            "series": predicted_max_series,
         }
 
-        return original_chart_config, prediction_chart_config
+        # Biểu đồ dự đoán giá trị nhỏ nhất
+        prediction_min_chart_config = {
+            "chart": {
+                "type": "column",
+                "zoomType": "x",
+                "style": {"fontFamily": "MyCustomFont, sans-serif"},
+            },
+            "title": {
+                "text": "Dự đoán giá trị nhỏ nhất cho 12 tháng tiếp theo",
+                "style": {"fontFamily": "MyCustomFont, sans-serif"},
+            },
+            "xAxis": {
+                "categories": predicted_time_points,
+                "title": {
+                    "text": "Tháng",
+                    "style": {"fontFamily": "MyCustomFont, sans-serif"},
+                },
+                "labels": {"rotation": -45},
+            },
+            "yAxis": {
+                "title": {
+                    "text": "Giá (USD)",
+                }
+            },
+            "tooltip": {
+                "shared": True,
+                "useHTML": True,
+                "headerFormat": "<em>Tháng: {point.key}</em><br/>",
+            },
+             "legend": {
+            "align": "center",  # Căn giữa legend
+            "verticalAlign": "bottom",  # Đặt legend dưới biểu đồ
+            "layout": "horizontal",  # Sắp xếp các mục trong legend theo chiều ngang
+            "itemDistance": 65,  # Khoảng cách giữa các mục trong legend
+            "padding": 20,  # Khoảng cách giữa legend và biểu đồ
+            "itemStyle": {
+                "fontSize": "14px",  # Kích thước chữ trong legend
+                "fontWeight": None,  # Để chữ đậm
+                "color": "black"  # Màu chữ trong legend
+            },
+        },
+            "series": predicted_min_series,
+        }
+
+        # Biểu đồ dự đoán giá trị trung bình
+        prediction_avg_chart_config = {
+            "chart": {
+                "type": "column",
+                "zoomType": "x",
+                "style": {"fontFamily": "MyCustomFont, sans-serif"},
+            },
+            "title": {
+                "text": "Dự đoán giá trị trung bình cho 12 tháng tiếp theo",
+                "style": {"fontFamily": "MyCustomFont, sans-serif"},
+            },
+            "xAxis": {
+                "categories": predicted_time_points,
+                "title": {
+                    "text": "Tháng",
+                    "style": {"fontFamily": "MyCustomFont, sans-serif"},
+                },
+                "labels": {"rotation": -45},
+            },
+            "yAxis": {
+                "title": {
+                    "text": "Giá (USD)",
+                }
+            },
+            "tooltip": {
+                "shared": True,
+                "useHTML": True,
+                "headerFormat": "<em>Tháng: {point.key}</em><br/>",
+            },
+             "legend": {
+            "align": "center",  # Căn giữa legend
+            "verticalAlign": "bottom",  # Đặt legend dưới biểu đồ
+            "layout": "horizontal",  # Sắp xếp các mục trong legend theo chiều ngang
+            "itemDistance": 65,  # Khoảng cách giữa các mục trong legend
+            "padding": 20,  # Khoảng cách giữa legend và biểu đồ
+            "itemStyle": {
+                "fontSize": "14px",  # Kích thước chữ trong legend
+                "fontWeight": None,  # Để chữ đậm
+                "color": "black"  # Màu chữ trong legend
+            },
+        },
+            "series": predicted_avg_series,
+        }
+
+        return (
+            original_max_chart_config,
+            original_min_chart_config,
+            original_avg_chart_config,
+            prediction_max_chart_config,
+            prediction_min_chart_config,
+            prediction_avg_chart_config,
+        )
 
     def generate_html(self, output_file="grouped_bar_chart.html"):
         """
-        Tạo và lưu file HTML với hai biểu đồ cột nhóm.
-
-        :param output_file: Đường dẫn đến tệp HTML sẽ được tạo ra, mặc định là "grouped_bar_chart.html".
+        Tạo và lưu file HTML với ba biểu đồ cột nhóm (giá trị lớn nhất, nhỏ nhất và trung bình).
         """
-        original_chart_config, prediction_chart_config = self.generate_chart_config()
-        original_chart_json = json.dumps(original_chart_config)
-        prediction_chart_json = json.dumps(prediction_chart_config)
+        original_max_chart_config, original_min_chart_config, original_avg_chart_config, \
+        prediction_max_chart_config, prediction_min_chart_config, prediction_avg_chart_config = self.generate_chart_config()
+
+        original_max_chart_json = json.dumps(original_max_chart_config)
+        original_min_chart_json = json.dumps(original_min_chart_config)
+        original_avg_chart_json = json.dumps(original_avg_chart_config)
+        prediction_max_chart_json = json.dumps(prediction_max_chart_config)
+        prediction_min_chart_json = json.dumps(prediction_min_chart_config)
+        prediction_avg_chart_json = json.dumps(prediction_avg_chart_config)
 
         html_template = f"""
         <!DOCTYPE html>
@@ -330,15 +600,15 @@ class PriceComparisonGroupedBarChart:
             <script src="https://code.highcharts.com/highcharts.js"></script>
         <style>
             @font-face {{
-                    font-family: 'MyCustomFont';
-                    src: url('../FVF_Fernando_08.ttf') format('truetype');
-                    font-weight: normal;
-                    font-style: normal;
-                }}
+                font-family: 'MyCustomFont';
+                src: url('../FVF_Fernando_08.ttf') format('truetype');
+                font-weight: normal;
+                font-style: normal;
+            }}
 
-                body {{
-                    font-family: 'MyCustomFont', sans-serif;
-                }}
+            body {{
+                font-family: 'MyCustomFont', sans-serif;
+            }}
             ::-webkit-scrollbar {{
                             width: 12px;
                             background: black;
@@ -391,39 +661,31 @@ class PriceComparisonGroupedBarChart:
                         ::-webkit-scrollbar-track-piece {{
                             background: none;
                         }}
+            
         </style>
         </head>
         <body>
             <div id="container1" style="width: 100%; height: 500px; margin-bottom: 50px;"></div>
-            <div id="container2" style="width: 100%; height: 500px;"></div>
+            <div id="container2" style="width: 100%; height: 500px; margin-bottom: 50px;"></div>
+            <div id="container3" style="width: 100%; height: 500px; margin-bottom: 50px;"></div>
+            <div id="container4" style="width: 100%; height: 500px; margin-bottom: 50px;"></div>
+            <div id="container5" style="width: 100%; height: 500px; margin-bottom: 50px;"></div>
+            <div id="container6" style="width: 100%; height: 500px;"></div>
             <script type="text/javascript">
-                function syncExtremes(e) {{
-                    var thisChart = this.chart;
-
-                    if (e.trigger !== 'syncExtremes') {{
-                        Highcharts.each(Highcharts.charts, function (chart) {{
-                            if (chart !== thisChart) {{
-                                if (chart.xAxis[0].setExtremes) {{
-                                    chart.xAxis[0].setExtremes(
-                                        e.min,
-                                        e.max,
-                                        undefined,
-                                        false,
-                                        {{ trigger: 'syncExtremes' }}
-                                    );
-                                }}
-                            }}
-                        }});
-                    }}
-                }}
-
                 document.addEventListener('DOMContentLoaded', function () {{
-                    var chartConfig1 = {original_chart_json};
-                    var chartConfig2 = {prediction_chart_json};
-
+                    var chartConfig1 = {original_max_chart_json};
+                    var chartConfig2 = {original_min_chart_json};
+                    var chartConfig3 = {original_avg_chart_json};
+                    var chartConfig4 = {prediction_max_chart_json};
+                    var chartConfig5 = {prediction_min_chart_json};
+                    var chartConfig6 = {prediction_avg_chart_json};
 
                     Highcharts.chart('container1', chartConfig1);
                     Highcharts.chart('container2', chartConfig2);
+                    Highcharts.chart('container3', chartConfig3);
+                    Highcharts.chart('container4', chartConfig4);
+                    Highcharts.chart('container5', chartConfig5);
+                    Highcharts.chart('container6', chartConfig6);
                 }});
             </script>
         </body>
@@ -434,6 +696,8 @@ class PriceComparisonGroupedBarChart:
             file.write(html_template)
 
         print(f"Biểu đồ đã được lưu vào {output_file}")
+
+
 
 
 # Use GameDealFetcher and PriceComparisonGroupedBarChart to generate the chart

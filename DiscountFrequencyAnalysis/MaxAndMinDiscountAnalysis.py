@@ -3,8 +3,8 @@ import requests
 import datetime
 from typing import Dict, List, Union
 import numpy as np
-from sklearn.linear_model import LinearRegression
-
+from statsmodels.tsa.arima.model import ARIMA
+import pandas as pd
 
 # Class GameDealFetcher để lấy dữ liệu từ API
 class GameDealFetcher:
@@ -124,30 +124,42 @@ class MaximumMinimumDiscountBoxPlot:
 
     def predict_next_twelve_months(self) -> List[Dict]:
         """
-        Dự đoán các mức giảm giá tối đa, tối thiểu trong 12 tháng tiếp theo cho mỗi cửa hàng.
+        Dự đoán các mức giảm giá tối đa, tối thiểu trong 12 tháng tiếp theo cho mỗi cửa hàng
+        sử dụng mô hình ARIMA.
 
         Returns:
         - List[Dict]: Dữ liệu dự đoán cho 12 tháng tiếp theo cho mỗi cửa hàng.
         """
         predicted_data = []
+
         for shop in self.shops_data:
             discounts = shop["discounts"]
-            if len(discounts) > 1:
-                # Sử dụng hồi quy tuyến tính để dự đoán mức giảm giá trong tương lai
-                x = np.arange(len(discounts)).reshape(-1, 1)
-                y = np.array(discounts)
-                model = LinearRegression().fit(x, y)
-                future_x = np.arange(len(discounts), len(discounts) + 12).reshape(-1, 1)
-                predicted_values = model.predict(future_x)
-                predicted_values = [
-                    round(max(0, val), 2) for val in predicted_values
-                ]  # Bảo đảm không có giá trị âm
 
-                predicted_data.append(
-                    {"shop_title": shop["shop_title"], "discounts": predicted_values}
-                )
+            if len(discounts) > 1:  # Đảm bảo có đủ dữ liệu
+                # Chuyển đổi dữ liệu giảm giá thành chuỗi thời gian
+                discounts_series = pd.Series(discounts)
+
+                # Cố gắng sử dụng ARIMA để dự đoán
+                try:
+                    # Tạo mô hình ARIMA (sử dụng p=1, d=1, q=1 là lựa chọn ban đầu phổ biến)
+                    model = ARIMA(discounts_series, order=(1, 1, 1))
+                    model_fit = model.fit()
+
+                    # Dự đoán 12 tháng tiếp theo
+                    forecast = model_fit.forecast(steps=12)
+                    forecast = [round(max(0, val), 2) for val in forecast]  # Bảo đảm giá trị không âm
+
+                    predicted_data.append(
+                        {"shop_title": shop["shop_title"], "discounts": forecast}
+                    )
+                except Exception as e:
+                    # Nếu có lỗi trong việc fitting mô hình ARIMA, sử dụng giá trị mặc định
+                    print(f"Error predicting for shop {shop['shop_title']}: {e}")
+                    predicted_data.append(
+                        {"shop_title": shop["shop_title"], "discounts": [0] * 12}
+                    )
             else:
-                # Nếu không đủ dữ liệu để dự đoán
+                # Nếu không đủ dữ liệu, dự đoán là 0
                 predicted_data.append(
                     {"shop_title": shop["shop_title"], "discounts": [0] * 12}
                 )

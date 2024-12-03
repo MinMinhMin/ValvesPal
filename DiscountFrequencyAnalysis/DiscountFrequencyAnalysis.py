@@ -1,14 +1,11 @@
 import pandas as pd
 import numpy as np
-from sklearn.linear_model import LinearRegression
 import json
 import requests
 import datetime
 from typing import Dict, List, Union
 from collections import defaultdict
-from DiscountFrequencyAnalysis.PriceEvolutionStepLineChart import (
-    PriceEvolutionLineChart,
-)
+from statsmodels.tsa.arima.model import ARIMA
 
 
 # Class GameDealFetcher để lấy dữ liệu từ API
@@ -125,9 +122,7 @@ class DiscountFrequencyHeatmap:
             "discount_frequency": discount_frequency,
         }
 
-    def predict_next_three_months(
-        self, discount_frequency: defaultdict, last_date: str
-    ) -> List[List[int]]:
+    def predict_next_three_months(self, discount_frequency: defaultdict, last_date: str) -> List[List[int]]:
         # Dự đoán tần suất giảm giá trong ba tháng tiếp theo
         shop_titles = sorted({shop["shop_title"] for shop in self.shops_data})
         dates = pd.to_datetime(
@@ -143,25 +138,37 @@ class DiscountFrequencyHeatmap:
             next_three_months.append(next_month)
 
         predictions = []
+
         # Dự đoán tần suất cho từng cửa hàng
         for i, shop in enumerate(shop_titles):
             shop_data = [
                 sum(discount_frequency[(shop, date.strftime("%Y-%m"))].values())
                 for date in dates
             ]
+            
             if len(shop_data) > 1:
-                # Sử dụng mô hình hồi quy tuyến tính để dự đoán
-                x = np.arange(len(shop_data)).reshape(-1, 1)
-                y = np.array(shop_data)
-                model = LinearRegression().fit(x, y)
-                future_x = np.arange(len(shop_data), len(shop_data) + 3).reshape(-1, 1)
-                predicted_values = model.predict(future_x)
-                predictions.extend(
-                    [
-                        [i, len(dates) + j, max(0, int(pred))]
-                        for j, pred in enumerate(predicted_values)
-                    ]
-                )
+                # Chuyển dữ liệu thành dạng mảng numpy
+                shop_data = np.array(shop_data)
+                
+                # Sử dụng ARIMA để dự đoán
+                try:
+                    # ARIMA(p, d, q): p = autoregressive, d = differencing, q = moving average
+                    model = ARIMA(shop_data, order=(1, 1, 1))  # Tùy chỉnh order (p, d, q) nếu cần
+                    model_fit = model.fit()
+
+                    # Dự đoán giá trị cho 3 tháng tiếp theo
+                    forecast = model_fit.forecast(steps=3)
+                    # Lưu kết quả dự đoán, làm tròn và đảm bảo giá trị không âm
+                    predictions.extend(
+                        [
+                            [i, len(dates) + j, max(0, int(round(pred)))]
+                            for j, pred in enumerate(forecast)
+                        ]
+                    )
+                except Exception as e:
+                    print(f"Error with ARIMA prediction for {shop}: {e}")
+                    # Nếu có lỗi, dự đoán mặc định là 0
+                    predictions.extend([[i, len(dates) + j, 0] for j in range(3)])
             else:
                 # Nếu không có đủ dữ liệu, dự đoán mặc định là 0
                 predictions.extend([[i, len(dates) + j, 0] for j in range(3)])
