@@ -12,7 +12,7 @@ def getPlayersData(id) -> pd.DataFrame:
         response = requests.get(url)
         soup = BeautifulSoup(response.text, "html.parser")
 
-        # Find the table and extract data
+       
         table = soup.find("table", class_="common-table")
         rows = table.find_all("tr")
 
@@ -22,14 +22,14 @@ def getPlayersData(id) -> pd.DataFrame:
             cells = row.find_all("td")
 
             if cells:
-                # Clean up the text by stripping whitespace and unwanted characters
+                #  Dọn văn bản bằng cách loại bỏ khoảng trắng và các ký tự ko cần thiết,..
                 month = cells[0].text.strip().replace("\n", "").replace("\t", "")
                 avg_players = cells[1].text.strip().replace("\n", "").replace("\t", "")
                 gain = cells[2].text.strip().replace("\n", "").replace("\t", "")
                 percent_gain = cells[3].text.strip().replace("\n", "").replace("\t", "")
                 peak_players = cells[4].text.strip().replace("\n", "").replace("\t", "")
 
-                # Handle missing values or empty fields
+                # Xử lý dữ liệu bị trống, rỗng ..
                 if avg_players == "-":
                     avg_players = None
                 if gain == "-":
@@ -42,7 +42,7 @@ def getPlayersData(id) -> pd.DataFrame:
                 # Add data to the list
                 data.append([month, avg_players, gain, percent_gain, peak_players])
 
-        # Convert the list into a DataFrame
+        # Convert list sang dataframe
         df = pd.DataFrame(
             data, columns=["Month", "Avg. Players", "Gain", "% Gain", "Peak Players"]
         )

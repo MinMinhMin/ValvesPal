@@ -1,7 +1,7 @@
 from io import BytesIO
 import os
 import sys
-from PyQt6.QtGui import QPixmap, QFontDatabase, QFont, QShortcut, QKeySequence
+from PyQt6.QtGui import QPixmap, QFontDatabase, QFont, QShortcut, QKeySequence,QPalette
 from PyQt6 import uic
 from PyQt6.QtWidgets import (
     QApplication,
@@ -33,6 +33,9 @@ app_icon.addFile("image/icon.png", QSize(256, 256))
 
 app.setWindowIcon(app_icon)
 app.setStyle("fusion")
+
+palette = app.palette()
+is_dark_mode = palette.color(QPalette.ColorRole.Window).value() < 128
 
 font_id = QFontDatabase.addApplicationFont("FVF_Fernando_08.ttf")
 font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
@@ -761,8 +764,9 @@ class MainStage(QMainWindow):
         ]
         objects = [getattr(self, name) for name in chartRace_names]
         fixed_pixelfont(objects, 8)
-        self.setWindowTitle("App")
+        self.setWindowTitle("ValvesPalTest")
         self.setGeometry(150, 60, 1280, 720)
+        self.setFixedSize(1280, 720)
 
         self.create_loading_screen()
 
@@ -837,7 +841,7 @@ class MainStage(QMainWindow):
             game_name.setFixedHeight(100)
             game_name.setFixedWidth(300)
             game_name.setEnabled(False)
-            game_name.setStyleSheet("background-color: rgba(0, 0, 0, 0);")
+            game_name.setStyleSheet("color: black;background-color: rgba(0, 0, 0, 0);")
 
             curentPrice = QLabel("Giá Hiện tại: " + str(item.deal.price.amount) + " $")
             curentPrice.setFont(pixelfont)
@@ -846,7 +850,7 @@ class MainStage(QMainWindow):
             )
             curentPrice.setMinimumHeight(90)
             curentPrice.setEnabled(False)
-            curentPrice.setStyleSheet("background-color: rgba(0, 0, 0, 0);")
+            curentPrice.setStyleSheet("color: black;background-color: rgba(0, 0, 0, 0);")
 
             basePrice = QLabel("Giá Gốc: " + str(item.deal.regular.amount) + " $")
             basePrice.setFont(pixelfont)
@@ -855,7 +859,7 @@ class MainStage(QMainWindow):
             )
             basePrice.setMinimumHeight(90)
             basePrice.setEnabled(False)
-            basePrice.setStyleSheet("background-color: rgba(0, 0, 0, 0);")
+            basePrice.setStyleSheet("color: black;background-color: rgba(0, 0, 0, 0);")
 
             sale = QLabel(
                 "Giảm: "
@@ -868,7 +872,7 @@ class MainStage(QMainWindow):
             sale.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             sale.setMinimumHeight(90)
             sale.setEnabled(False)
-            sale.setStyleSheet("background-color: rgba(0, 0, 0, 0);")
+            sale.setStyleSheet("color: black;background-color: rgba(0, 0, 0, 0);")
 
             text_layout.addWidget(game_name)
             text_layout.addWidget(curentPrice)

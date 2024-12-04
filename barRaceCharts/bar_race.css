@@ -2,13 +2,12 @@
 
 @font-face {
     font-family: "MyCustomFont";
-    src: url("../FVF_Fernando_08.ttf") format("truetype"); /* Adjust the path if needed */
-    font-weight: normal;
+    src: url("../FVF_Fernando_08.ttf") format("truetype"); 
     font-style: normal;
 }
 
 body{
-    font-family: "MyCustomFont", sans-serif; /* Fallback to sans-serif */
+    font-family: "MyCustomFont", sans-serif; 
 }
 
 .highcharts-figure {

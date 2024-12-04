@@ -3,7 +3,7 @@ import json
 from game import *
 from game_info import *
 
-# Set up your API key and base URL
+# Set up  API key and base URL
 
 
 class GetPrice:
@@ -86,7 +86,7 @@ class GetPrice:
                     except:
                         print("Error")
                         continue
-            # Pretty print the JSON response
+            
         else:
             print(f"Error: {response.status_code} - {response.text}")
 
