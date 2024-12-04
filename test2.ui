@@ -495,7 +495,7 @@ QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
                 <string notr="true">border-radius: 0px;</string>
                </property>
                <property name="text">
-                <string>Unknow</string>
+                <string>Unknown</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignCenter</set>
@@ -513,7 +513,7 @@ QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
                 <string notr="true">border-radius: 0px;</string>
                </property>
                <property name="text">
-                <string>Unknow</string>
+                <string>Unknown</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignCenter</set>
@@ -531,7 +531,7 @@ QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
                 <string notr="true">border-radius: 0px;</string>
                </property>
                <property name="text">
-                <string>Unknow</string>
+                <string>Unknown</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignCenter</set>
@@ -549,7 +549,7 @@ QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
                 <string notr="true">border-radius: 0px;</string>
                </property>
                <property name="text">
-                <string>Unknow</string>
+                <string>Unknown</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignCenter</set>
@@ -579,7 +579,7 @@ QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
                 <string notr="true">border-radius: 0px;</string>
                </property>
                <property name="text">
-                <string>Unknow</string>
+                <string>Unknown</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignCenter</set>
@@ -597,7 +597,7 @@ QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
                 <string notr="true">border-radius: 0px;</string>
                </property>
                <property name="text">
-                <string>Unknow</string>
+                <string>Unknown</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignCenter</set>
@@ -615,7 +615,7 @@ QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
                 <string notr="true">border-radius: 0px;</string>
                </property>
                <property name="text">
-                <string>Unknow</string>
+                <string>Unknown</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignCenter</set>
@@ -633,7 +633,7 @@ QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
                 <string notr="true">border-radius: 0px;</string>
                </property>
                <property name="text">
-                <string>Unknow</string>
+                <string>Unknown</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignCenter</set>

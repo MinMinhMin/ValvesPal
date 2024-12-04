@@ -40,10 +40,10 @@
             },
 
             data: {
-            csv: csvData, // Sử dụng dữ liệu từ file CSV
+            csv: csvData, 
             seriesMapping: [{
-                code: 1,   // Giả sử mã quốc gia nằm ở cột thứ hai
-                value: 2   // Giả sử số lượng người dùng nằm ở cột thứ ba
+                code: 1,   
+                value: 2   
             }]
             },
 

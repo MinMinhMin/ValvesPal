@@ -68,6 +68,7 @@ class SearchWindow(QWidget):
                 button.setStyleSheet(
                     """
                 QPushButton {
+                    color: black;
                     background-color: white;
                     padding: 10px;
                 }

@@ -1,7 +1,7 @@
 
 @font-face {
     font-family: "MyCustomFont";
-    src: url("../FVF_Fernando_08.ttf") format("truetype"); /* Adjust the path if needed */
+    src: url("../FVF_Fernando_08.ttf") format("truetype"); 
     font-weight: normal;
     font-style: normal;
 }
@@ -14,7 +14,7 @@
     font-size: 20px;
 }
 body{
-    font-family: "MyCustomFont", sans-serif; /* Fallback to sans-serif */
+    font-family: "MyCustomFont", sans-serif; 
 }
 
 ::-webkit-scrollbar {

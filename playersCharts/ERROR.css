@@ -1,4 +1,4 @@
-/* Reset some basic styles */
+
 * {
     margin: 0;
     padding: 0;
@@ -6,7 +6,7 @@
 }
 @font-face {
     font-family: "MyCustomFont";
-    src: url("../FVF_Fernando_08.ttf") format("truetype"); /* Adjust the path if needed */
+    src: url("../FVF_Fernando_08.ttf") format("truetype");
     font-weight: normal;
     font-style: normal;
 }

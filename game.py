@@ -32,10 +32,10 @@ class GetDaiLyGames:
                 response.raise_for_status()  # Check for HTTP errors
                 data = response.json()
                 self.game_list = GetDaiLyGames.parse_api_response(data).game_list
-                break  # Exit the loop if successful
+                break  
             except requests.exceptions.ReadTimeout:
                 print("Request timed out, retrying...")
-                time.sleep(2)  # Wait before retrying
+                time.sleep(2)  
             except requests.exceptions.RequestException as e:
                 print(f"Error: {e}")
                 break
@@ -168,7 +168,7 @@ class GameDealsResponse:
 
 """
 
-# Example usage
+# Test
 daily = GetDaiLyGames("VN", 1, (61, 35))
 for game in daily.game_list:
     # test1.ui

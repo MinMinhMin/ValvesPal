@@ -49,8 +49,8 @@
             data: {
                 csv: csvData, // Sử dụng dữ liệu tệp CSV cục bộ
                 seriesMapping: [{
-                    code: 1,   // Giả sử mã quốc gia nằm ở cột thứ hai
-                    value: 2   // Giả sử số lượng người dùng nằm ở cột thứ ba
+                    code: 1,   
+                    value: 2  
                 }]
             },
 
