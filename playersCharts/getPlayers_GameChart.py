@@ -53,7 +53,7 @@ def getPlayersData(id) -> pd.DataFrame:
         df["Peak Players"] = (
             df["Peak Players"].replace({",": ""}, regex=True).astype(int)
         )
-
+        print(df)
         return df
 
     except Exception as e:
