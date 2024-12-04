@@ -10,6 +10,7 @@ Follow the steps below to set up the project. You can use **Poetry** to manage d
 
 - **Python 3.11+**
 - **Poetry** (optional, for dependency management and virtual environment setup)
+- **Chrome** (Sorry :D)
 
 ### Installation
 
@@ -37,3 +38,17 @@ Follow the steps below to set up the project. You can use **Poetry** to manage d
 #### Option 2: Using requirements.txt
 
 If you are not using venv or are using a different dependency manager, use this instead.
+
+## P/S:
+
+You must host a local server on port 5500 to visualize charts.
+
+```batch
+   python -m http.server 5500
+```
+
+or simply download the Live Server extension in Visual Studio Code, then
+
+```batch
+   live-server --port=5500
+```

@@ -12,7 +12,7 @@ def getPredictions(df):
     df["Month"] = pd.to_datetime(df["Month"], unit="ms")
     df.set_index("Month", inplace=True)
     length = int(df.shape[0] / 3)
- 
+
     df = df.asfreq("M", method="ffill")
     print(df)
     # SARIMAX
@@ -36,7 +36,7 @@ def getPredictions(df):
     forecast = result.get_forecast(steps=length)
 
     # lấy các giá trị dự báo (giá trị trung bình dự đoán)
-    forecast_values = forecast.predicted_mean
+    forecast_values = forecast.predicted_mean.clip(lower=0)
     # tạo index cho khoảng thời gian dự báo (Months)
     forecast_index = pd.date_range(start=df.index[-1], periods=length + 1, freq="M")[
         1:

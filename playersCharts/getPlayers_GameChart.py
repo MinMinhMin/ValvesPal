@@ -12,7 +12,6 @@ def getPlayersData(id) -> pd.DataFrame:
         response = requests.get(url)
         soup = BeautifulSoup(response.text, "html.parser")
 
-       
         table = soup.find("table", class_="common-table")
         rows = table.find_all("tr")
 
@@ -98,5 +97,5 @@ class GameCount:
             json.dump(update, file)
 
 
-# gameCount = GameCount("TF2", "2716400")
+# gameCount = GameCount("CP2077", "1091500")
 # print(gameCount.check)
