@@ -28,7 +28,7 @@ class GetDaiLyGames:
         retries = 3
         for i in range(retries):
             try:
-                response = requests.get(base_url, params=params)
+                response = requests.get(base_url, params=params, timeout=10)
                 response.raise_for_status()  # Check for HTTP errors
                 data = response.json()
                 self.game_list = GetDaiLyGames.parse_api_response(data).game_list

@@ -144,10 +144,12 @@ class PriceComparisonGroupedBarChart:
                 ]
 
                 if relevant_deals:
-                    # Lấy giá trị lớn nhất và nhỏ nhất của shop trong tháng đó
+                    # Lấy giá trị lớn nhất và nhỏ nhất và trung bình của shop trong tháng đó
                     max_deal = max(relevant_deals, key=lambda x: x["price"])
                     min_deal = min(relevant_deals, key=lambda x: x["price"])
-                    avg_price = (max_deal["price"] + min_deal["price"]) / 2
+                    avg_price = sum(deal["price"] for deal in relevant_deals) / len(
+                        relevant_deals
+                    )
                     time_point_data[date][f"{shop_title}_max"] = max_deal["price"]
                     time_point_data[date][f"{shop_title}_min"] = min_deal["price"]
                     time_point_data[date][f"{shop_title}_avg"] = avg_price
