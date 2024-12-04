@@ -1,16 +1,17 @@
 import sqlite3
 from PyQt6.QtWidgets import QVBoxLayout, QPushButton, QWidget, QLineEdit
-from PyQt6.QtGui import QFontDatabase,QFont
+from PyQt6.QtGui import QFontDatabase, QFont
 from PyQt6.QtCore import Qt
 from searchBar import *
 from game_info import GameView
 from getPrice import GetPrice
 from game import *
+
 dic = {}
 
 
 class SearchWindow(QWidget):
-    def __init__(self, window,windowParent):
+    def __init__(self, window, windowParent):
         super().__init__()
         font_id = QFontDatabase.addApplicationFont("FVF_Fernando_08.ttf")
         font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
@@ -68,6 +69,7 @@ class SearchWindow(QWidget):
                 button.setStyleSheet(
                     """
                 QPushButton {
+                    color: black;
                     background-color: white;
                     padding: 10px;
                 }
@@ -86,8 +88,8 @@ class SearchWindow(QWidget):
         print(
             f"You clicked on: {title} with id:{dic[title]}"
         )  # Replace with any action you want
-        deal=GetPrice(dic[title]).best_deal
-        game=Game(dic[title],None,title,deal)
+        deal = GetPrice(dic[title]).best_deal
+        game = Game(dic[title], None, title, deal)
         self.windowParent.game_clicked_onSearch(game)
 
     def closeEvent(self, event):
