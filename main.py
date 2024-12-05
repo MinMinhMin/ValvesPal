@@ -1,7 +1,7 @@
 from io import BytesIO
 import os
 import sys
-from PyQt6.QtGui import QPixmap, QFontDatabase, QFont, QShortcut, QKeySequence,QPalette
+from PyQt6.QtGui import QPixmap, QFontDatabase, QFont, QShortcut, QKeySequence, QPalette
 from PyQt6 import uic
 from PyQt6.QtWidgets import (
     QApplication,
@@ -697,7 +697,7 @@ class DataLoaderThread(QThread):
 
     def run(self):
 
-        daily_game = GetDaiLyGames("VN", 15, (61, 35))
+        daily_game = GetDaiLyGames("VN", 15, (20, 6, 16, 35, 37, 61, 24))
         self.data_loaded.emit(daily_game)
 
 
@@ -850,7 +850,9 @@ class MainStage(QMainWindow):
             )
             curentPrice.setMinimumHeight(90)
             curentPrice.setEnabled(False)
-            curentPrice.setStyleSheet("color: black;background-color: rgba(0, 0, 0, 0);")
+            curentPrice.setStyleSheet(
+                "color: black;background-color: rgba(0, 0, 0, 0);"
+            )
 
             basePrice = QLabel("Giá Gốc: " + str(item.deal.regular.amount) + " $")
             basePrice.setFont(pixelfont)

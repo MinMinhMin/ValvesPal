@@ -32,7 +32,7 @@ class GetPrice:
         base_url = "https://api.isthereanydeal.com/games/prices/v3"
         params = {
             "key": api_key,
-            "shops": "19,2,4,13,15,52,16,67,6,17,20,68,24,25,27,28,26,29,35,26,27,42,65,47,48,49,66,50,70,61,62,64",
+            "shops": "20,6,16,35,37,61,24",
         }
         headers = {"Content-Type": "application/json"}
         response = requests.post(base_url, headers=headers, json=payload, params=params)
@@ -86,7 +86,7 @@ class GetPrice:
                     except:
                         print("Error")
                         continue
-            
+
         else:
             print(f"Error: {response.status_code} - {response.text}")
 
