@@ -399,6 +399,9 @@ class gameStage(QMainWindow):
         self.latestPrice.setText("Giá hiện tại:   " + currentPriceStr)
         self.basePrice.setText("Giá gốc:   " + basePriceStr)
         self.sale.setText(saleStr)
+
+        self.bestDealShopImg.setPixmap(QPixmap(f"image/{item.deal.shop.name}.png"))
+        
         self.closeButton.setStyleSheet(
             """
                 QPushButton {
